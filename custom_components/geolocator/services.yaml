@@ -1,0 +1,22 @@
+update_location:
+  name: Update Location
+  description: >
+    Use the current GPS coordinates of zone.home to fetch reverse geocode location information
+    and timezone using the selected API provider.
+    Automatically updates all GeoLocator sensors and the Home Assistant system timezone if it has changed.
+  fields: {}
+
+set_home_timezone:
+  name: Set Home Timezone
+  description: >
+    Set the timezone of the Home Assistant system directly using an IANA time zone identifier
+    (e.g., America/Los_Angeles, Europe/Paris).
+  fields:
+    timezone:
+      name: Timezone
+      description: IANA time zone identifier to set (e.g., America/New_York)
+      example: "America/New_York"
+      required: true
+      selector:
+        text:
+          type: text

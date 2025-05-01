@@ -1,0 +1,11 @@
+{
+    "domain": "geolocator",
+    "name": "GeoLocator",
+    "version": "0.1.0",
+    "dependencies": [],
+    "codeowners": ["@SmartyVan"],
+    "requirements": [],
+    "iot_class": "cloud_polling",
+    "config_flow": true
+  }
+  

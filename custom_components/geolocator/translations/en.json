@@ -1,0 +1,95 @@
+{
+  "title": "GeoLocator",
+
+  "config": {
+    "step": {
+      "user": {
+        "title": "Setup GeoLocator",
+        "description": "Choose a geolocation API provider and optional credentials.",
+        "data": {
+          "api_provider": "API Provider",
+          "api_key": "API Key or Username"
+        }
+      },
+      "api_key": {
+        "title": "API Credentials",
+        "description": "Enter the API key or username required for the selected provider.",
+        "data": {
+          "api_key": "API Key or Username"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the selected API.",
+      "invalid_auth": "Invalid API key or username.",
+      "unknown": "An unknown error occurred."
+    },
+    "abort": {
+      "already_configured": "GeoLocator is already configured."
+    }
+  },
+
+  "options": {
+    "step": {
+      "init": {
+        "title": "GeoLocator Options",
+        "description": "Update the geolocation provider and API credentials.",
+        "data": {
+          "api_provider": "API Provider",
+          "api_key": "API Key or Username"
+        }
+      },
+      "api_key": {
+        "title": "Enter API Key",
+        "description": "API credentials required for the selected provider.",
+        "data": {
+          "api_key": "API Key or Username"
+        }
+      }
+    }
+  },
+
+  "services": {
+    "update_location": {
+      "name": "Update Location",
+      "description": "Fetch reverse geocode data and update location/timezone sensors."
+    },
+    "set_home_timezone": {
+      "name": "Set Home Timezone",
+      "description": "Update the system time zone using an IANA identifier (e.g., America/New_York)."
+    }
+  },
+
+  "entity": {
+    "sensor": {
+      "geolocator_current_address": {
+        "name": "Current Address"
+      },
+      "geolocator_neighborhood": {
+        "name": "Neighborhood"
+      },
+      "geolocator_city": {
+        "name": "City"
+      },
+      "geolocator_state": {
+        "name": "State"
+      },
+      "geolocator_country": {
+        "name": "Country"
+      },
+      "geolocator_timezone_id": {
+        "name": "Timezone ID"
+      },
+      "geolocator_timezone_name": {
+        "name": "Timezone Name"
+      },
+      "geolocator_timezone_abbreviation": {
+        "name": "Timezone Abbreviation"
+      }
+    }
+  },
+
+  "google": "Google Maps",
+  "geonames": "GeoNames",
+  "osm": "OpenStreetMap (Nominatim)"
+}

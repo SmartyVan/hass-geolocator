@@ -1,0 +1,29 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Home Assistant files
+home-assistant_v2.db
+*.db
+*.log
+*.yaml~
+.storage/
+deps/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# VSCode settings
+.vscode/
+
+# Build artifacts
+*.tar.gz
+*.zip
+*.egg-info/
+
+# Python virtual environment
+.venv/
+env/
