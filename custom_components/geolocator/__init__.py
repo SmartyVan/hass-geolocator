@@ -87,7 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 try:
                     from timezonefinder import TimezoneFinderL
                     def _find_timezone():
-                        return TimezoneFinder().timezone_at(lat=lat, lng=lon)
+                        return TimezoneFinderL().timezone_at(lat=lat, lng=lon)
                     tz = await hass.async_add_executor_job(_find_timezone)
                     if tz:
                         timezone_id = tz
@@ -95,7 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     else:
                         source = "Error"
                 except Exception as e:
-                    _LOGGER.warning(...)
+                    _LOGGER.warning("GeoLocator: Failed to find local fallback timezone: %s", e)
                     source = "Error"
 
             hass.data[DOMAIN][entry.entry_id]["last_address"] = address_data
