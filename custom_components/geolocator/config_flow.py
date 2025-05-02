@@ -32,7 +32,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         schema = vol.Schema({
-            vol.Required("api_provider", default="osm"): vol.In(API_PROVIDERS),
+            vol.Required("api_provider", default="offline"): vol.In(list(API_PROVIDERS.keys())),
         })
 
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -62,7 +62,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         self._config_entry = config_entry
-        self._selected_provider = config_entry.options.get("api_provider") or config_entry.data.get("api_provider", "google")
+        self._selected_provider = config_entry.options.get("api_provider") or config_entry.data.get("api_provider", "offline")
 
     async def async_step_init(self, user_input=None):
         if user_input is not None:
@@ -78,7 +78,7 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlow):
             )
 
         schema = vol.Schema({
-            vol.Required("api_provider", default=self._selected_provider): vol.In(API_PROVIDERS),
+            vol.Required("api_provider", default="offline"): vol.In(list(API_PROVIDERS.keys())),
         })
 
         return self.async_show_form(step_id="init", data_schema=schema)
