@@ -10,7 +10,7 @@ This integration also solves a major problem for mobile Home Assistant servers: 
 ### OFFLINE happens
 Designed specifically for moving vehicles (vans, RVs, boats) that *MAY* not always have an internet connection, GeoLocator falls back to a local python library ([timezonefinder](https://pypi.org/project/timezonefinder/)) when no network connection is available. This method is less accurate, but works offline.
 
-*Optionally*: GeoLocator can be used in `Offline` mode to force the use of the local timezonefinderL library at all times to set system timezone — in this mode, no reverse geocode data will be retrived.
+*Optionally*: GeoLocator can be used in `Offline` mode to force the use of the local timezonefinder library at all times to set system timezone — in this mode, no reverse geocode data will be retrived.
 
 ---
 
@@ -52,6 +52,9 @@ data:
   longitude: -118.2426
 ```
 The source of the coordinates can be from any sensor or input you have available. This may be a router, Home Assistant native iOS / Android app, Cerbo GX with USB GPS dongle, etc.
+
+*Step 1 does not rely on this custom component, but is a necessary step to ensure your `zone.home` has current GPS coordinates.*
+
 ### Step 2.
 Call custom service: `geolocator.update_location`:
 ```yaml
