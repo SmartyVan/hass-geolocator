@@ -1,5 +1,3 @@
-# custom_components/geolocator/api/bigdatacloud.py
-
 import aiohttp
 import logging
 from .base import GeoLocatorAPI
@@ -8,11 +6,12 @@ _LOGGER = logging.getLogger(__name__)
 
 BIGDATACLOUD_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client"
 
+
 class BigDataCloudAPI(GeoLocatorAPI):
     """GeoLocator API using BigDataCloud (no key required)."""
 
     def __init__(self):
-        self._last_timezone_info = None
+        pass  # Removed _last_timezone_info; no longer needed
 
     async def reverse_geocode(self, latitude, longitude):
         params = {
@@ -24,30 +23,26 @@ class BigDataCloudAPI(GeoLocatorAPI):
             async with session.get(BIGDATACLOUD_URL, params=params) as resp:
                 data = await resp.json()
                 _LOGGER.debug("BigDataCloud response: %s", data)
-                # Try to extract timezone from localityInfo.informative
-                tz = None
-                try:
-                    informative = data.get("localityInfo", {}).get("informative", [])
-                    for item in informative:
-                        if item.get("description", "").lower() == "time zone":
-                            tz = item.get("name")
-                            break
-                except Exception as e:
-                    _LOGGER.warning("BigDataCloud: Failed to extract timezone: %s", e)
-
-                self._last_timezone_info = {"id": tz} if tz else None
                 return data
 
     async def get_timezone(self, latitude, longitude):
-        if self._last_timezone_info:
-            return self._last_timezone_info.get("id")
+        data = await self.reverse_geocode(latitude, longitude)
+        informative = data.get("localityInfo", {}).get("informative", [])
+        for item in informative:
+            if item.get("description", "").lower() == "time zone":
+                return item.get("name")
         return None
 
     def format_full_address(self, data):
-        return data.get("locality", "") + ", " + data.get("principalSubdivision", "") + ", " + data.get("countryName", "")
+        # Handle missing parts safely
+        locality = data.get("locality", "")
+        state = data.get("principalSubdivision", "")
+        country = data.get("countryName", "")
+        parts = [p for p in [locality, state, country] if p]
+        return ", ".join(parts)
 
     def extract_neighborhood(self, data):
-        return None  # Not provided
+        return None  # Not available from BigDataCloud
 
     def extract_city(self, data):
         return data.get("locality")

@@ -14,3 +14,10 @@ ATTR_TIMESTAMP = "timestamp"
 
 TIMEZONE_SENSOR = "current_timezone"
 LOCATION_SENSOR = "current_location"
+
+API_PROVIDERS = {
+    "google": "Google Maps",
+    "geonames": "GeoNames",
+    "bigdatacloud": "BigDataCloud",
+    "offline": "Offline"
+}

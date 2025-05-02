@@ -5,15 +5,10 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
-from .const import DOMAIN
+from .const import DOMAIN, API_PROVIDERS
 
 _LOGGER = logging.getLogger(__name__)
 
-API_PROVIDERS = {
-    "google": "Google Maps",
-    "geonames": "GeoNames",
-    "bigdatacloud": "BigDataCloud (No account required)"
-}
 
 REQUIRES_KEY = {"google", "geonames"}
 

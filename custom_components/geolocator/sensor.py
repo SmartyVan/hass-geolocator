@@ -11,20 +11,27 @@ from .const import DOMAIN
 
 SENSOR_KEYS = {
     "current_address": "Current Address",
-    "neighborhood": "Neighborhood",
     "city": "City",
     "state": "State",
     "country": "Country",
     "timezone_id": "Timezone ID",
     "timezone_abbreviation": "Timezone Abbreviation",
+    "timezone_source": "Data Source",
 }
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
     api_data = hass.data[DOMAIN][entry.entry_id]
     sensors = []
 
+    provider = entry.options.get("api_provider") or entry.data.get("api_provider", "google")
+
     for key, name in SENSOR_KEYS.items():
-        sensors.append(GeoLocatorSensor(hass=hass, entry=entry, key=key, name=name, api_data=api_data))
+        if provider == "offline" and key not in ("timezone_id", "timezone_abbreviation", "timezone_source"):
+            continue
+        if key == "timezone_source":
+            sensors.append(TimezoneSourceSensor(hass=hass, entry=entry))
+        else:
+            sensors.append(GeoLocatorSensor(hass=hass, entry=entry, key=key, name=name, api_data=api_data))
 
     async_add_entities(sensors)
 
@@ -43,7 +50,7 @@ class GeoLocatorSensor(SensorEntity):
 
     @property
     def state(self):
-        if self._key in ("timezone_id", "timezone_name", "timezone_abbreviation"):
+        if self._key in ("timezone_id", "timezone_abbreviation"):
             tz_id = self._api_data.get("last_timezone")
             if not tz_id:
                 return None
@@ -60,3 +67,19 @@ class GeoLocatorSensor(SensorEntity):
             if not last:
                 return None
             return last.get(self._key)
+
+
+class TimezoneSourceSensor(SensorEntity):
+    def __init__(self, hass, entry):
+        self._hass = hass
+        self._entry = entry
+        self._attr_name = "GeoLocator: Data Source"
+        self._attr_unique_id = f"{entry.entry_id}_data_source"
+
+        hass.data[DOMAIN][entry.entry_id]["entities"].append(self)
+
+    @property
+    def state(self):
+        return self._hass.data[DOMAIN][self._entry.entry_id].get("last_timezone_source")
+
+    

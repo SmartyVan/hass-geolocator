@@ -4,7 +4,7 @@
     "version": "0.1.0",
     "dependencies": [],
     "codeowners": ["@SmartyVan"],
-    "requirements": [],
+    "requirements": ["timezonefinder[lite]==6.5.9"],
     "iot_class": "cloud_polling",
     "config_flow": true
   }
