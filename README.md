@@ -1,4 +1,4 @@
-<!-- ![GeoLocator logo](logo/icon.png) -->
+![GeoLocator logo](logo/icon.png)
 
 # GeoLocator by SmartyVan
 ### WHERE are we
