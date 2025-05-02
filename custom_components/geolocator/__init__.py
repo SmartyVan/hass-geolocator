@@ -85,7 +85,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             if not timezone_id:
                 try:
-                    from timezonefinder import TimezoneFinder
+                    from timezonefinder import TimezoneFinderL
                     def _find_timezone():
                         return TimezoneFinder().timezone_at(lat=lat, lng=lon)
                     tz = await hass.async_add_executor_job(_find_timezone)
