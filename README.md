@@ -91,7 +91,6 @@ This flexibility allows for maximum control over polling rates, and updates.
 |:-------|:------------|
 | `sensor.geolocator_current_address`* | Formatted location name |
 | `sensor.geolocator_city`* | City name |
-| `sensor.geolocator_neighborhood`* | Neighborhood name |
 | `sensor.geolocator_state`* | State name |
 | `sensor.geolocator_country`* | Country name |
 | `sensor.geolocator_timezone_id` | Timezone ID (`America/Chicago`) |
