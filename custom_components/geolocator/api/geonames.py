@@ -45,7 +45,7 @@ class GeoNamesAPI(GeoLocatorAPI):
         street_line = f"{street_number} {street}".strip() if street or street_number else None
 
         # City / locality
-        placename = reverse_top.get("placename")
+        placename = place_top.get("name")
 
         # Combine state + postal code (no comma)
         admin = reverse_top.get("adminCode1")
