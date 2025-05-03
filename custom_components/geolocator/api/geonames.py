@@ -58,8 +58,8 @@ class GeoNamesAPI(GeoLocatorAPI):
         return ", ".join(filter(None, [street_line, placename, region_line, country]))
 
     def extract_city(self, data):
-        reverse_top = self._get_top_result(data["reverse"])
-        return reverse_top.get("placename")
+        place_top = self._get_top_result(data["place"])
+        return place_top.get("name")
 
     def extract_state_long(self, data):
         reverse_top = self._get_top_result(data["reverse"])

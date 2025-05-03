@@ -27,3 +27,6 @@ Thumbs.db
 # Python virtual environment
 .venv/
 env/
+
+# API dev
+/API Dev/
