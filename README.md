@@ -1,11 +1,11 @@
 ![GeoLocator logo](logo/icon.png)
 
-# GeoLocator by SmartyVan
+# GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
 ### WHERE are we
 **GeoLocator** is a Home Assistant custom integration that retrieves current reverse geocoded location sensor data based on `zone.home` GPS coordinate attributes using one of several provided reverse geocode API options.
 
 ### WHEN are we
-This integration also solves a major problem for mobile Home Assistant servers: it creates a service to update the Home Assistant system timezone programatically. An accurate system timezone is crucial for Automation Timing, Sun events (`sun.sun`), Template rendering (`now()`, `today_at()`, `as_timestamp()`), and Dashboard time display.
+This integration also solves a major problem for mobile Home Assistant servers: it creates a service to update the Home Assistant system timezone programatically. An accurate system timezone is crucial for Automation Timing, Sun events, Template rendering (`now()`, `today_at()`, `as_timestamp()`), and Dashboard time display.
 
 ### OFFLINE happens
 Designed specifically for moving vehicles (vans, RVs, boats) that *MAY* not always have an internet connection, GeoLocator falls back to a local python library ([timezonefinder](https://pypi.org/project/timezonefinder/)) when no network connection is available. This method is less accurate, but works offline.
@@ -92,7 +92,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 
 | Entity | Description |
 |:-------|:------------|
-| `sensor.geolocator_current_address`* | Formatted location name |
+| `sensor.geolocator_current_address`* | Formatted location address |
 | `sensor.geolocator_city`* | City name |
 | `sensor.geolocator_state`* | State name |
 | `sensor.geolocator_country`* | Country name |
@@ -108,7 +108,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 
 These are the currently supported APIs. Feel free to submit pull requests for other services.
 
-| API Service        | Credentials Needed      | Notes                        | Current Address                            |
+| API Service        | Credentials      | Notes                        | Current Address |
 |--------------------|-------------------------|-----------------------------------------------------------------------|--------|
 | **Google Maps**    | API Key | Enable Reverse Geocode & Timezone APIs. Be sure to add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address |
 | **GeoNames**       | Username | Requires free [user account](https://www.geonames.org/login). | Full street address (US only) |
