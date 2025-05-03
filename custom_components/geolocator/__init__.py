@@ -85,9 +85,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             if not timezone_id:
                 try:
-                    from timezonefinder import TimezoneFinderL
+                    from timezonefinder import TimezoneFinder
+
                     def _find_timezone():
-                        return TimezoneFinderL().timezone_at(lat=lat, lng=lon)
+                        tf = TimezoneFinder(in_memory=True)
+                        try:
+                            return tf.timezone_at(lat=lat, lng=lon)
+                        except Exception as e:
+                            _LOGGER.warning("GeoLocator: Exception while finding timezone: %s", e)
+                            return None
+
                     tz = await hass.async_add_executor_job(_find_timezone)
                     if tz:
                         timezone_id = tz
