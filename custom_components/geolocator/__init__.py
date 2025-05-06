@@ -6,10 +6,12 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.service import async_register_admin_service
 
-from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDERS  
+from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDER_META
 from .api.google import GoogleMapsAPI
 from .api.geonames import GeoNamesAPI
 from .api.bigdatacloud import BigDataCloudAPI
+
+from timezonefinder import TimezoneFinder
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,15 +80,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         "state": api.extract_state_long(geocode_raw),
                         "country": api.extract_country(geocode_raw),
                     }
-                    source = API_PROVIDERS.get(provider, provider)
+                    source = API_PROVIDER_META[provider]["name"]
                     
                 except Exception as e:
                     _LOGGER.warning("GeoLocator: Failed to update location: %s", e)
 
             if not timezone_id:
                 try:
-                    from timezonefinder import TimezoneFinder
-
                     def _find_timezone():
                         tf = TimezoneFinder(in_memory=True)
                         try:
@@ -124,7 +124,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id]["update_func"] = async_update_location_service
     hass.services.async_register(DOMAIN, "update_location", async_update_location_service)
-
 
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
 

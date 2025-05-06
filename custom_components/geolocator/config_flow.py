@@ -57,6 +57,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="credentials",
                 data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
                 errors=self._errors,
+                description_placeholders={}
             )
         else:
             # Skip credentials step if not needed
@@ -71,9 +72,9 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return GeoLocatorOptionsFlowHandler(config_entry)
 
 
-class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlow):
+class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
     def __init__(self, config_entry):
-        self.config_entry = config_entry
+        super().__init__(config_entry)
         self._errors = {}
         self._selected_provider = None
 
@@ -100,6 +101,7 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Required(CONF_API_PROVIDER, default=current_provider): vol.In(provider_options)
             }),
             errors=self._errors,
+            description_placeholders={}
         )
 
     async def async_step_options_credentials(self, user_input=None):
@@ -129,4 +131,5 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="options_credentials",
             data_schema=vol.Schema({vol.Required(CONF_API_KEY, default=current_key): str}),
             errors=self._errors,
+            description_placeholders={}
         )
