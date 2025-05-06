@@ -45,7 +45,7 @@ class GeoNamesAPI(GeoLocatorAPI):
         street_line = f"{street_number} {street}".strip() if street or street_number else None
 
         # City / locality
-        placename = place_top.get("name")
+        placename = reverse_top.get("placename")
 
         # Combine state + postal code (no comma)
         admin = reverse_top.get("adminCode1")
@@ -58,8 +58,8 @@ class GeoNamesAPI(GeoLocatorAPI):
         return ", ".join(filter(None, [street_line, placename, region_line, country]))
 
     def extract_city(self, data):
-        place_top = self._get_top_result(data["place"])
-        return place_top.get("name")
+        reverse_top = self._get_top_result(data["reverse"])
+        return reverse_top.get("placename")
 
     def extract_state_long(self, data):
         reverse_top = self._get_top_result(data["reverse"])
