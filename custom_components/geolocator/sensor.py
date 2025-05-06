@@ -19,6 +19,16 @@ SENSOR_KEYS = {
     "timezone_source": "Data Source",
 }
 
+SENSOR_ICONS = {
+    "current_address": "mdi:map-marker",
+    "city": "mdi:city",
+    "state": "mdi:flag-variant",
+    "country": "mdi:earth",
+    "timezone_id": "mdi:calendar-clock",
+    "timezone_abbreviation": "mdi:map-clock",
+    "timezone_source": "mdi:cloud-download",
+}
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
     api_data = hass.data[DOMAIN][entry.entry_id]
     sensors = []
@@ -44,6 +54,8 @@ class GeoLocatorSensor(SensorEntity):
         self._api_data = api_data
         self._attr_name = f"GeoLocator: {name}"
         self._attr_unique_id = f"{entry.entry_id}_{key}"
+        self._attr_icon = SENSOR_ICONS.get(key, "mdi:map-marker-question")
+
 
         # Register self for updates
         hass.data[DOMAIN][entry.entry_id]["entities"].append(self)
@@ -75,6 +87,8 @@ class TimezoneSourceSensor(SensorEntity):
         self._entry = entry
         self._attr_name = "GeoLocator: Data Source"
         self._attr_unique_id = f"{entry.entry_id}_data_source"
+        self._attr_icon = SENSOR_ICONS.get("timezone_source", "mdi:cloud-question")
+
 
         hass.data[DOMAIN][entry.entry_id]["entities"].append(self)
 
