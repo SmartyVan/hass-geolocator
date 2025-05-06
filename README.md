@@ -100,7 +100,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 | `sensor.geolocator_timezone_abbreviation` | Timezone Abbreviation (`CDT`) |
 | `sensor.geolocator_data_source` | API provider used for current data (*or Offline Fallback*)  |
 
-\* *these sensors are only created/updated when using an API*
+\* *these sensors are only created/updated when using an API - they will also be unavailable when GeoLocator falls back to the local Python library*
 
 ---
 
