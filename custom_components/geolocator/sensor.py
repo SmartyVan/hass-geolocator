@@ -9,55 +9,15 @@ from datetime import datetime
 
 from .const import DOMAIN
 
-SENSOR_KEYS = {
-    "current_address": "Current Address",
-    "city": "City",
-    "state": "State",
-    "country": "Country",
-    "timezone_id": "Timezone ID",
-    "timezone_abbreviation": "Timezone Abbreviation",
-    "timezone_source": "Data Source",
-}
-
-SENSOR_ICONS = {
-    "current_address": "mdi:map-marker",
-    "city": "mdi:city",
-    "state": "mdi:flag-variant",
-    "country": "mdi:earth",
-    "timezone_id": "mdi:calendar-clock",
-    "timezone_abbreviation": "mdi:map-clock",
-    "timezone_source": "mdi:cloud-download",
-}
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
-    api_data = hass.data[DOMAIN][entry.entry_id]
-    sensors = []
-
-    provider = entry.options.get("api_provider") or entry.data.get("api_provider", "google")
-
-    for key, name in SENSOR_KEYS.items():
-        if provider == "offline" and key not in ("timezone_id", "timezone_abbreviation", "timezone_source"):
-            continue
-        if key == "timezone_source":
-            sensors.append(TimezoneSourceSensor(hass=hass, entry=entry))
-        else:
-            sensors.append(GeoLocatorSensor(hass=hass, entry=entry, key=key, name=name, api_data=api_data))
-
-    async_add_entities(sensors)
-
-
 class GeoLocatorSensor(SensorEntity):
-    def __init__(self, hass, entry, key, name, api_data):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, key: str, name: str) -> None:
+        self._hass = hass
         self._entry = entry
         self._key = key
-        self._name = name
-        self._api_data = api_data
         self._attr_name = f"GeoLocator: {name}"
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_icon = SENSOR_ICONS.get(key, "mdi:map-marker-question")
-
-
-        # Register self for updates
+        self._api_data = hass.data[DOMAIN][entry.entry_id]
         hass.data[DOMAIN][entry.entry_id]["entities"].append(self)
 
     @property
@@ -68,32 +28,88 @@ class GeoLocatorSensor(SensorEntity):
                 return None
             try:
                 now = datetime.now(ZoneInfo(tz_id))
-                if self._key == "timezone_id":
-                    return tz_id
-                elif self._key == "timezone_abbreviation":
-                    return now.tzname()
+                return tz_id if self._key == "timezone_id" else now.tzname()
             except Exception:
                 return None
-        else:
-            last = self._api_data.get("last_address")
-            if not last:
-                return None
-            return last.get(self._key)
-
+        last = self._api_data.get("last_address") or {}
+        return last.get(self._key)
 
 class TimezoneSourceSensor(SensorEntity):
-    def __init__(self, hass, entry):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self._hass = hass
         self._entry = entry
         self._attr_name = "GeoLocator: Data Source"
         self._attr_unique_id = f"{entry.entry_id}_data_source"
-        self._attr_icon = SENSOR_ICONS.get("timezone_source", "mdi:cloud-question")
-
-
+        self._attr_icon = SENSOR_ICONS.get("timezone_source", "mdi:cloud-download")
         hass.data[DOMAIN][entry.entry_id]["entities"].append(self)
 
     @property
     def state(self):
         return self._hass.data[DOMAIN][self._entry.entry_id].get("last_timezone_source")
 
-    
+class PublicLandsSensor(SensorEntity):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, key: str, name: str) -> None:
+        self._hass = hass
+        self._entry = entry
+        self._key = key
+        self._attr_name = f"GeoLocator: {name}"
+        self._attr_unique_id = f"{entry.entry_id}_uspl_{key}"
+        self._attr_icon = SENSOR_ICONS.get(key, "mdi:map-marker-question")
+        self._api_data = hass.data[DOMAIN][entry.entry_id]
+        hass.data[DOMAIN][entry.entry_id]["entities"].append(self)
+
+    @property
+    def state(self):
+        public_data = self._api_data.get("us_public_lands_data") or {}
+        return public_data.get(self._key) or "Unavailable"
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    config = entry.options or entry.data
+    provider = config.get("api_provider", "google")
+    uspl_enabled = config.get("enable_us_public_lands", False)
+    sensors: list[SensorEntity] = []
+
+    for spec in SENSOR_DEFINITIONS:
+        if not spec["include_if"](provider, uspl_enabled):
+            continue
+        if spec["cls"] is TimezoneSourceSensor:
+            inst = spec["cls"](hass, entry)
+        else:
+            inst = spec["cls"](hass, entry, spec["key"], spec["name"])
+        sensors.append(inst)
+
+    async_add_entities(sensors)
+
+SENSOR_DEFINITIONS: list[dict] = [
+    {"key": "current_address", "name": "Current Address", "cls": GeoLocatorSensor, "include_if": lambda provider, uspl: provider != "offline"},
+    {"key": "city", "name": "City", "cls": GeoLocatorSensor, "include_if": lambda provider, uspl: provider != "offline"},
+    {"key": "state", "name": "State", "cls": GeoLocatorSensor, "include_if": lambda provider, uspl: provider != "offline"},
+    {"key": "country", "name": "Country", "cls": GeoLocatorSensor, "include_if": lambda provider, uspl: provider != "offline"},
+    {"key": "timezone_id", "name": "Timezone ID", "cls": GeoLocatorSensor, "include_if": lambda provider, uspl: True},
+    {"key": "timezone_abbreviation", "name": "Timezone Abbreviation", "cls": GeoLocatorSensor, "include_if": lambda provider, uspl: True},
+    {"key": "timezone_source", "name": "Data Source", "cls": TimezoneSourceSensor, "include_if": lambda provider, uspl: True},
+    {"key": "DesTp_Desc", "name": "USPL Designation", "cls": PublicLandsSensor, "include_if": lambda provider, uspl: uspl},
+    {"key": "MngNm_Desc", "name": "USPL Management Name", "cls": PublicLandsSensor, "include_if": lambda provider, uspl: uspl},
+    {"key": "MngTp_Desc", "name": "USPL Management Type", "cls": PublicLandsSensor, "include_if": lambda provider, uspl: uspl},
+    {"key": "Pub_Access", "name": "USPL Public Access", "cls": PublicLandsSensor, "include_if": lambda provider, uspl: uspl},
+    {"key": "Unit_Nm", "name": "USPL Unit Name", "cls": PublicLandsSensor, "include_if": lambda provider, uspl: uspl},
+]
+
+SENSOR_ICONS = {
+    "current_address": "mdi:map-marker",
+    "city": "mdi:city",
+    "state": "mdi:flag-variant",
+    "country": "mdi:earth",
+    "timezone_id": "mdi:calendar-clock",
+    "timezone_abbreviation": "mdi:map-clock",
+    "timezone_source": "mdi:cloud-download",
+    "DesTp_Desc": "mdi:forest",
+    "MngNm_Desc": "mdi:office-building",
+    "MngTp_Desc": "mdi:account-tie",
+    "Pub_Access": "mdi:lock-open",
+    "Unit_Nm": "mdi:information-outline",
+}
