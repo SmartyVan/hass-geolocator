@@ -5,9 +5,17 @@
     "step": {
       "user": {
         "title": "Setup GeoLocator",
-        "description": "Choose a geolocation API provider and optional credentials.",
+        "description": "Choose a geolocation API and provide credentials if required.",
         "data": {
           "api_provider": "API Provider",
+          "api_key": "API Key or Username",
+          "enable_us_public_lands": "Enable US Public Lands"
+        }
+      },
+      "credentials": {
+        "title": "API Credentials",
+        "description": "Enter the API key or username required for the selected provider.",
+        "data": {
           "api_key": "API Key or Username"
         }
       },
@@ -36,12 +44,13 @@
         "description": "Update the geolocation provider and API credentials.",
         "data": {
           "api_provider": "API Provider",
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "enable_us_public_lands": "Enable US Public Lands Geocode"
         }
       },
-      "api_key": {
-        "title": "Enter API Key",
-        "description": "API credentials required for the selected provider.",
+      "options_credentials": {
+        "title": "API Credentials",
+        "description": "Enter the API key or username required for the selected provider.",
         "data": {
           "api_key": "API Key or Username"
         }

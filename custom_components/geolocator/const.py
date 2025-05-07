@@ -2,11 +2,12 @@
 
 DOMAIN = "geolocator"
 
+CONF_API_PROVIDER = "api_provider"
 CONF_API_KEY = "api_key"
 
 SERVICE_UPDATE_LOCATION = "update_location"
 SERVICE_SET_TIMEZONE = "set_home_timezone"
-
+CONF_ENABLE_US_PUBLIC_LANDS = "enable_us_public_lands"
 
 ATTR_LATITUDE = "latitude"
 ATTR_LONGITUDE = "longitude"
@@ -15,9 +16,9 @@ ATTR_TIMESTAMP = "timestamp"
 TIMEZONE_SENSOR = "current_timezone"
 LOCATION_SENSOR = "current_location"
 
-API_PROVIDERS = {
-    "google": "Google Maps",
-    "geonames": "GeoNames",
-    "bigdatacloud": "BigDataCloud",
-    "offline": "Offline"
+API_PROVIDER_META = {
+    "google": {"name": "Google Maps", "needs_key": True},
+    "geonames": {"name": "GeoNames", "needs_key": True},
+    "bigdatacloud": {"name": "BigDataCloud", "needs_key": False},
+    "offline": {"name": "Offline", "needs_key": False},
 }

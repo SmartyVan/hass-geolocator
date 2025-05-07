@@ -1,57 +1,72 @@
-from __future__ import annotations
-
 import logging
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
-from .const import DOMAIN, API_PROVIDERS
+from homeassistant.data_entry_flow import FlowResult
+
+from .const import (
+    DOMAIN,
+    CONF_API_KEY,
+    CONF_API_PROVIDER,
+    CONF_ENABLE_US_PUBLIC_LANDS,
+    API_PROVIDER_META,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-
-REQUIRES_KEY = {"google", "geonames"}
 
 class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     def __init__(self):
-        self.selected_provider: str | None = None
+        self._errors = {}
+        self._selected_provider = None
 
     async def async_step_user(self, user_input=None):
+        self._errors = {}
+
         if user_input is not None:
-            self.selected_provider = user_input["api_provider"]
-            if self.selected_provider in REQUIRES_KEY:
-                return await self.async_step_api_key()
+            self._selected_provider = user_input[CONF_API_PROVIDER]
+            self._enable_public_lands = user_input.get(CONF_ENABLE_US_PUBLIC_LANDS, False)
+            return await self.async_step_credentials()
+
+        provider_options = {
+            k: f"{v['name']} (no key required)" if not v['needs_key'] else v['name']
+            for k, v in API_PROVIDER_META.items()
+        }
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema({
+                vol.Required(CONF_API_PROVIDER): vol.In(provider_options),
+                vol.Optional(CONF_ENABLE_US_PUBLIC_LANDS, default=False): bool,
+            }),
+            errors=self._errors,
+        )
+
+    async def async_step_credentials(self, user_input=None):
+        self._errors = {}
+
+        provider = self._selected_provider
+        provider_meta = API_PROVIDER_META.get(provider, {})
+
+        if user_input is not None or not provider_meta.get("needs_key"):
             return self.async_create_entry(
                 title="GeoLocator",
                 data={
-                    "api_provider": self.selected_provider,
-                    "api_key": "",
-                },
+                    CONF_API_PROVIDER: provider,
+                    CONF_API_KEY: user_input.get(CONF_API_KEY, "") if user_input else "",
+                    CONF_ENABLE_US_PUBLIC_LANDS: self._enable_public_lands
+                }
             )
 
-        schema = vol.Schema({
-            vol.Required("api_provider", default="offline"): vol.In(list(API_PROVIDERS.keys())),
-        })
-
-        return self.async_show_form(step_id="user", data_schema=schema)
-
-    async def async_step_api_key(self, user_input=None):
-        if user_input is not None:
-            return self.async_create_entry(
-                title="GeoLocator",
-                data={
-                    "api_provider": self.selected_provider,
-                    "api_key": user_input["api_key"],
-                },
-            )
-
-        schema = vol.Schema({
-            vol.Required("api_key"): str,
-        })
-
-        return self.async_show_form(step_id="api_key", data_schema=schema)
+        return self.async_show_form(
+            step_id="credentials",
+            data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
+            errors=self._errors,
+            description_placeholders={}
+        )
 
     @staticmethod
     @callback
@@ -59,42 +74,68 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return GeoLocatorOptionsFlowHandler(config_entry)
 
 
-class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        self._config_entry = config_entry
-        self._selected_provider = config_entry.options.get("api_provider") or config_entry.data.get("api_provider", "offline")
+class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
+    def __init__(self, config_entry):
+        super().__init__(config_entry)
+        self._errors = {}
+        self._selected_provider = None
 
     async def async_step_init(self, user_input=None):
+        self._errors = {}
+
+        current_provider = self.config_entry.options.get(
+            CONF_API_PROVIDER,
+            self.config_entry.data.get(CONF_API_PROVIDER)
+        )
+        current_enable_public_lands = self.config_entry.options.get(
+            CONF_ENABLE_US_PUBLIC_LANDS,
+            self.config_entry.data.get(CONF_ENABLE_US_PUBLIC_LANDS, False)
+        )
+
         if user_input is not None:
-            self._selected_provider = user_input["api_provider"]
-            if self._selected_provider in REQUIRES_KEY:
-                return await self.async_step_api_key()
+            self._selected_provider = user_input[CONF_API_PROVIDER]
+            self._enable_public_lands = user_input.get(CONF_ENABLE_US_PUBLIC_LANDS, False)
+            return await self.async_step_options_credentials()
+
+        provider_options = {
+            k: f"{v['name']} (no key required)" if not v['needs_key'] else v['name']
+            for k, v in API_PROVIDER_META.items()
+        }
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required(CONF_API_PROVIDER, default=current_provider): vol.In(provider_options),
+                vol.Optional(CONF_ENABLE_US_PUBLIC_LANDS, default=current_enable_public_lands): bool,
+            }),
+            errors=self._errors,
+            description_placeholders={}
+        )
+
+    async def async_step_options_credentials(self, user_input=None):
+        self._errors = {}
+
+        provider = self._selected_provider
+        provider_meta = API_PROVIDER_META.get(provider, {})
+
+        current_key = self.config_entry.options.get(
+            CONF_API_KEY,
+            self.config_entry.data.get(CONF_API_KEY, "")
+        )
+
+        if not provider_meta.get("needs_key") or user_input is not None:
             return self.async_create_entry(
-                title="GeoLocator",
+                title="",
                 data={
-                    "api_provider": self._selected_provider,
-                    "api_key": "",
-                },
+                    CONF_API_PROVIDER: provider,
+                    CONF_API_KEY: user_input.get(CONF_API_KEY, "") if user_input else "",
+                    CONF_ENABLE_US_PUBLIC_LANDS: getattr(self, "_enable_public_lands", False)
+                }
             )
 
-        schema = vol.Schema({
-            vol.Required("api_provider", default="offline"): vol.In(list(API_PROVIDERS.keys())),
-        })
-
-        return self.async_show_form(step_id="init", data_schema=schema)
-
-    async def async_step_api_key(self, user_input=None):
-        if user_input is not None:
-            return self.async_create_entry(
-                title="GeoLocator",
-                data={
-                    "api_provider": self._selected_provider,
-                    "api_key": user_input["api_key"],
-                },
-            )
-
-        schema = vol.Schema({
-            vol.Required("api_key", default=self._config_entry.options.get("api_key", "")): str,
-        })
-
-        return self.async_show_form(step_id="api_key", data_schema=schema)
+        return self.async_show_form(
+            step_id="options_credentials",
+            data_schema=vol.Schema({vol.Required(CONF_API_KEY, default=current_key): str}),
+            errors=self._errors,
+            description_placeholders={}
+        )

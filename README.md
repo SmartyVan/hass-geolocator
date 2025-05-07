@@ -1,6 +1,6 @@
 ![GeoLocator logo](logo/icon.png)
 
-# GeoLocator by SmartyVan
+# GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
 ### WHERE are we
 **GeoLocator** is a Home Assistant custom integration that retrieves current reverse geocoded location sensor data based on `zone.home` GPS coordinate attributes using one of several provided reverse geocode API options.
 
@@ -92,7 +92,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 
 | Entity | Description |
 |:-------|:------------|
-| `sensor.geolocator_current_address`* | Formatted location name |
+| `sensor.geolocator_current_address`* | Formatted location address |
 | `sensor.geolocator_city`* | City name |
 | `sensor.geolocator_state`* | State name |
 | `sensor.geolocator_country`* | Country name |
@@ -100,7 +100,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 | `sensor.geolocator_timezone_abbreviation` | Timezone Abbreviation (`CDT`) |
 | `sensor.geolocator_data_source` | API provider used for current data (*or Offline Fallback*)  |
 
-\* *these sensors are only created/updated when using an API*
+\* *these sensors are only created/updated when using an API - they will also be unavailable when GeoLocator falls back to the local Python library*
 
 ---
 
@@ -108,10 +108,10 @@ This flexibility allows for maximum control over polling rates, and updates.
 
 These are the currently supported APIs. Feel free to submit pull requests for other services.
 
-| API Service        | Credentials Needed      | Notes                        | Formatted Location Name                            |
+| API Service        | Credentials      | Notes                        | Current Address |
 |--------------------|-------------------------|-----------------------------------------------------------------------|--------|
 | **Google Maps**    | API Key | Enable Reverse Geocode & Timezone APIs. Be sure to add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address |
-| **GeoNames**       | Username | Requires free [user account](https://www.geonames.org/login). | Full street address (US only) |
+| **GeoNames**       | Username | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web servcies (link at bottom of page).  | Full street address (US only) |
 | **BigDataCloud**   | None                 | Free - no API key required. | City, State, Country Only |
 | **Offline** | None | **No Reverse Geocode!** Some enclaves or borders are less accurate than the API solutions but works 100% locally using the timezonefinder library. | None |
 
