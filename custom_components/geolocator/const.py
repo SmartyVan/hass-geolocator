@@ -7,7 +7,7 @@ CONF_API_KEY = "api_key"
 
 SERVICE_UPDATE_LOCATION = "update_location"
 SERVICE_SET_TIMEZONE = "set_home_timezone"
-
+CONF_ENABLE_US_PUBLIC_LANDS = "enable_us_public_lands"
 
 ATTR_LATITUDE = "latitude"
 ATTR_LONGITUDE = "longitude"
