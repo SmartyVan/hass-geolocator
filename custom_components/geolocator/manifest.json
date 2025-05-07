@@ -1,7 +1,7 @@
 {
     "domain": "geolocator",
     "name": "GeoLocator",
-    "version": "0.2.4-beta",
+    "version": "0.3.0-beta",
     "dependencies": [],
     "documentation": "https://github.com/SmartyVan/hass-geolocator",
     "issue_tracker": "https://github.com/SmartyVan/hass-geolocator/issues",
@@ -10,4 +10,3 @@
     "iot_class": "cloud_polling",
     "config_flow": true
   }
-  
