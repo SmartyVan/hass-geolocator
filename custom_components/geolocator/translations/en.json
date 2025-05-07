@@ -8,7 +8,8 @@
         "description": "Choose a geolocation API and provide credentials if required.",
         "data": {
           "api_provider": "API Provider",
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "enable_us_public_lands": "Enable US Public Lands"
         }
       },
       "credentials": {
@@ -43,7 +44,8 @@
         "description": "Update the geolocation provider and API credentials.",
         "data": {
           "api_provider": "API Provider",
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "enable_us_public_lands": "Enable US Public Lands Geocode"
         }
       },
       "options_credentials": {
