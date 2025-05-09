@@ -15,6 +15,10 @@ from timezonefinder import TimezoneFinder
 
 from openlocationcode import openlocationcode as olc
 
+from babel.dates import get_timezone_name
+from zoneinfo import ZoneInfo
+from datetime import datetime
+
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -108,10 +112,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 except Exception as e:
                     _LOGGER.warning("GeoLocator: Failed to find local timezone: %s", e)
 
+            # Add full timezone name using Babel and zoneinfo
+            try:
+                if timezone_id:
+                    tz = ZoneInfo(timezone_id)
+                    dt = datetime.now(tz)
+                    locale = str(hass.config.language or "en_US")
+                    is_dst = dt.dst() is not None and dt.dst().total_seconds() != 0
+                    zone_variant = 'daylight' if is_dst else 'standard'
+                    def _get_full_timezone_name():
+                        from babel.dates import get_timezone
+                        tzinfo = get_timezone(timezone_id)
+                        from babel.core import Locale
+                        loc = Locale.parse(locale)
+                        return get_timezone_name(
+                            dt,
+                            locale=loc
+                        )
+                    full_name = await hass.async_add_executor_job(_get_full_timezone_name)
+                else:
+                    full_name = None
+            except Exception as e:
+                _LOGGER.warning("GeoLocator: Failed to get full timezone name: %s", e)
+                full_name = None
+
             hass.data[DOMAIN][entry.entry_id]["last_address"] = address_data
             hass.data[DOMAIN][entry.entry_id]["last_timezone"] = timezone_id
             hass.data[DOMAIN][entry.entry_id]["last_timezone_source"] = source
-            hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code  # ← store it
+            hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code
+            hass.data[DOMAIN][entry.entry_id]["timezone_full"] = full_name
 
             for entity in hass.data[DOMAIN][entry.entry_id]["entities"]:
                 entity.async_schedule_update_ha_state(True)

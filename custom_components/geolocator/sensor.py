@@ -15,6 +15,7 @@ SENSOR_KEYS = {
     "state": "State",
     "country": "Country",
     "timezone_id": "Timezone ID",
+    "timezone_full": "Timezone",
     "timezone_abbreviation": "Timezone Abbreviation",
     "timezone_source": "Data Source",
     "plus_code": "Plus Code",
@@ -26,6 +27,7 @@ SENSOR_ICONS = {
     "state": "mdi:flag-variant",
     "country": "mdi:earth",
     "timezone_id": "mdi:calendar-clock",
+    "timezone_full": "mdi:map-clock-outline",
     "timezone_abbreviation": "mdi:map-clock",
     "timezone_source": "mdi:cloud-download",
     "plus_code": "mdi:crosshairs-gps",
@@ -76,6 +78,8 @@ class GeoLocatorSensor(SensorEntity):
                     return now.tzname()
             except Exception:
                 return None
+        elif self._key == "timezone_full":
+            return self._api_data.get("timezone_full")
         elif self._key == "plus_code":
             return self._api_data.get("last_plus_code")
         else:
