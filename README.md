@@ -97,7 +97,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 | `sensor.geolocator_state`* | State name | API |
 | `sensor.geolocator_country`* | Country name | API |
 | `sensor.geolocator_timezone_id` | Timezone ID (`America/Chicago`) | API / Local Fallback |
-| `sensor.geolocator_timezone` | Timezone (`Eastern Daylight Time`) | Local |
+| `sensor.geolocator_timezone` | Timezone (`Central Daylight Time`) | Local |
 | `sensor.geolocator_timezone_abbreviation` | Timezone Abbreviation (`CDT`) | Local |
 | `sensor.geolocator_data_source` | API provider used for current data (*or Offline Fallback*)  | Local |
 | `sensor.geolocator_plus_code` | Full [Plus Code](https://maps.google.com/pluscodes/) for current location | Local |
