@@ -23,14 +23,14 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async def async_set_home_timezone(call: ServiceCall):
-        await hass.config.async_update(time_zone=call.data["time_zone"])
+        await hass.config.async_update(time_zone=call.data["timezone"])
 
     async_register_admin_service(
         hass,
         DOMAIN,
         SERVICE_SET_TIMEZONE,
         async_set_home_timezone,
-        vol.Schema({"time_zone": cv.time_zone}),
+        vol.Schema({"timezone": cv.time_zone}),
     )
     return True
 
@@ -141,6 +141,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data[DOMAIN][entry.entry_id]["last_timezone_source"] = source
             hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code
             hass.data[DOMAIN][entry.entry_id]["timezone_full"] = full_name
+
+            # Call the timezone-setting service with the computed timezone_id
+            if timezone_id:
+                try:
+                    await hass.services.async_call(
+                        DOMAIN,
+                        SERVICE_SET_TIMEZONE,
+                        {"timezone": timezone_id},
+                        blocking=True
+                    )
+                except Exception as e:
+                    _LOGGER.error("GeoLocator: Failed to call set_home_timezone: %s", e)
 
             for entity in hass.data[DOMAIN][entry.entry_id]["entities"]:
                 entity.async_schedule_update_ha_state(True)
