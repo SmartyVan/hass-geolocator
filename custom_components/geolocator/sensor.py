@@ -17,6 +17,7 @@ SENSOR_KEYS = {
     "timezone_id": "Timezone ID",
     "timezone_abbreviation": "Timezone Abbreviation",
     "timezone_source": "Data Source",
+    "plus_code": "Plus Code",
 }
 
 SENSOR_ICONS = {
@@ -27,6 +28,7 @@ SENSOR_ICONS = {
     "timezone_id": "mdi:calendar-clock",
     "timezone_abbreviation": "mdi:map-clock",
     "timezone_source": "mdi:cloud-download",
+    "plus_code": "mdi:crosshairs-gps",
 }
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
@@ -74,6 +76,8 @@ class GeoLocatorSensor(SensorEntity):
                     return now.tzname()
             except Exception:
                 return None
+        elif self._key == "plus_code":
+            return self._api_data.get("last_plus_code")
         else:
             last = self._api_data.get("last_address")
             if not last:

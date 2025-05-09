@@ -13,6 +13,8 @@ from .api.bigdatacloud import BigDataCloudAPI
 
 from timezonefinder import TimezoneFinder
 
+from openlocationcode import openlocationcode as olc
+
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -68,6 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             address_data = {}
             timezone_id = None
             source = None
+            plus_code = olc.encode(lat, lon)
 
             if api is not None:
                 try:
@@ -79,9 +82,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         "city": api.extract_city(geocode_raw),
                         "state": api.extract_state_long(geocode_raw),
                         "country": api.extract_country(geocode_raw),
+                        "plus_code": plus_code,
                     }
                     source = API_PROVIDER_META[provider]["name"]
-                    
+
                 except Exception as e:
                     _LOGGER.warning("GeoLocator: Failed to update location: %s", e)
 
@@ -102,25 +106,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     else:
                         source = "Error"
                 except Exception as e:
-                    _LOGGER.warning("GeoLocator: Failed to find local fallback timezone: %s", e)
-                    source = "Error"
+                    _LOGGER.warning("GeoLocator: Failed to find local timezone: %s", e)
 
             hass.data[DOMAIN][entry.entry_id]["last_address"] = address_data
             hass.data[DOMAIN][entry.entry_id]["last_timezone"] = timezone_id
             hass.data[DOMAIN][entry.entry_id]["last_timezone_source"] = source
+            hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code  # ← store it
 
-            _LOGGER.info("GeoLocator: Timezone ID: %s (source: %s)", timezone_id, source)
-
-            if timezone_id:
-                await hass.config.async_update(time_zone=timezone_id)
-
-            for entity in hass.data[DOMAIN][entry.entry_id].get("entities", []):
-                entity.async_write_ha_state()
-
-            _LOGGER.debug("GeoLocator: Updated %d sensor entities", len(hass.data[DOMAIN][entry.entry_id]["entities"]))
+            for entity in hass.data[DOMAIN][entry.entry_id]["entities"]:
+                entity.async_schedule_update_ha_state(True)
 
         except Exception as e:
-            _LOGGER.exception("GeoLocator: Failed to update location: %s", e)
+            _LOGGER.exception("GeoLocator: Unexpected error during location update: %s", e)
+
 
     hass.data[DOMAIN][entry.entry_id]["update_func"] = async_update_location_service
     hass.services.async_register(DOMAIN, "update_location", async_update_location_service)
