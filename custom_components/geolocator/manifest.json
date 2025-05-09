@@ -6,7 +6,7 @@
     "documentation": "https://github.com/SmartyVan/hass-geolocator",
     "issue_tracker": "https://github.com/SmartyVan/hass-geolocator/issues",
     "codeowners": ["@SmartyVan"],
-    "requirements": ["timezonefinder==4.5.0", "openlocationcode"],
+    "requirements": ["timezonefinder==4.5.0", "openlocationcode", "Babel>=2.9.0"],
     "iot_class": "cloud_polling",
     "config_flow": true
   }
