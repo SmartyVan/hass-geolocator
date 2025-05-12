@@ -9,7 +9,7 @@ class GeoNamesAPI(GeoLocatorAPI):
     def __init__(self, username: str):
         self.username = username
 
-    async def reverse_geocode(self, lat, lon):
+    async def reverse_geocode(self, lat, lon, language="en"):
         async with aiohttp.ClientSession() as session:
             reverse_resp = await session.get(GEONAMES_REVERSE_URL, params={"lat": lat, "lng": lon, "username": self.username})
             place_resp = await session.get(GEONAMES_PLACE_URL, params={"lat": lat, "lng": lon, "username": self.username, "cities": "cities500"})
@@ -17,7 +17,7 @@ class GeoNamesAPI(GeoLocatorAPI):
             place_data = await place_resp.json()
             return {"reverse": reverse_data, "place": place_data}
 
-    async def get_timezone(self, lat, lon):
+    async def get_timezone(self, lat, lon, language="en"):
         params = {
             "lat": lat,
             "lng": lon,

@@ -5,16 +5,20 @@ GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 TIMEZONE_URL = "https://maps.googleapis.com/maps/api/timezone/json"
 
 class GoogleMapsAPI(GeoLocatorAPI):
-    def __init__(self, api_key):
+    def __init__(self, api_key, language="en"):
         self.api_key = api_key
 
-    async def reverse_geocode(self, lat, lon):
+    async def reverse_geocode(self, lat, lon, language="en"):
         async with aiohttp.ClientSession() as session:
-            params = {"latlng": f"{lat},{lon}", "key": self.api_key}
+            params = {
+                "latlng": f"{lat},{lon}",
+                "key": self.api_key,
+                "language": language,
+            }
             async with session.get(GEOCODE_URL, params=params) as resp:
                 return await resp.json()
 
-    async def get_timezone(self, lat, lon):
+    async def get_timezone(self, lat, lon, language="en"):
         import time
         import logging
         _LOGGER = logging.getLogger(__name__)
@@ -25,6 +29,7 @@ class GoogleMapsAPI(GeoLocatorAPI):
                 "location": f"{lat},{lon}",
                 "timestamp": timestamp,
                 "key": self.api_key,
+                "language": language,
             }
             async with session.get(TIMEZONE_URL, params=params) as resp:
                 data = await resp.json()
