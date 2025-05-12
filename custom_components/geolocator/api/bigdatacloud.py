@@ -13,7 +13,7 @@ class BigDataCloudAPI(GeoLocatorAPI):
     def __init__(self):
         pass  # Removed _last_timezone_info; no longer needed
 
-    async def reverse_geocode(self, latitude, longitude):
+    async def reverse_geocode(self, latitude, longitude, language="en"):
         params = {
             "latitude": latitude,
             "longitude": longitude,
@@ -25,7 +25,7 @@ class BigDataCloudAPI(GeoLocatorAPI):
                 _LOGGER.debug("BigDataCloud response: %s", data)
                 return data
 
-    async def get_timezone(self, latitude, longitude):
+    async def get_timezone(self, latitude, longitude, language="en"):
         data = await self.reverse_geocode(latitude, longitude)
         informative = data.get("localityInfo", {}).get("informative", [])
         for item in informative:
