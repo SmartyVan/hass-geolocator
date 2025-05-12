@@ -2,7 +2,8 @@
 
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
 [![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
-[![GitHub release](https://img.shields.io/github/v/release/yourusername/yourrepo)](https://github.com/yourusername/yourrepo/releases)
+[![GitHub release](https://img.shields.io/github/v/release/smartyvan/hass-geolocator)](https://github.com/smartyvan/hass-geolocator/releases)
+
 
 ### 📺 Watch the [YouTube video](https://www.youtube.com/watch?v=Kg4TQhNOonE) about this project:
 [<img width="350" alt="Smarty Van YouTube video" src="https://img.youtube.com/vi/Kg4TQhNOonE/maxresdefault.jpg"/>](https://www.youtube.com/watch?v=Kg4TQhNOonE)
