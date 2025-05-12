@@ -1,6 +1,11 @@
-![GeoLocator logo](logo/icon.png)
+<img width="150" alt="GeoLocator" src="logo/icon.png"/>
 
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
+[![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/v/release/yourusername/yourrepo)](https://github.com/yourusername/yourrepo/releases)
+
+### 📺 Watch the [YouTube video](https://www.youtube.com/watch?v=Kg4TQhNOonE) about this project:
+[<img width="350" alt="Smarty Van YouTube video" src="https://img.youtube.com/vi/Kg4TQhNOonE/maxresdefault.jpg"/>](https://www.youtube.com/watch?v=Kg4TQhNOonE)
 ### WHERE are we
 **GeoLocator** is a Home Assistant custom integration that retrieves current reverse geocoded location sensor data based on `zone.home` GPS coordinate attributes using one of several provided reverse geocode API options.
 
@@ -18,26 +23,33 @@ Designed specifically for moving vehicles (vans, RVs, boats) that *MAY* not alwa
 
 ### HACS Installation (Custom Repository)
 
-This integration is not yet available in the HACS default store, however you can still install it via HACS as a custom repository:
+This integration is not yet available in the HACS default store, however you can still install it via [HACS](https://www.hacs.xyz/docs/use/) as a custom repository:
 
-1. In Home Assistant, go to **HACS → Integrations**
+1. In Home Assistant, go to **HACS**
 2. Click the **⋮ (three-dot menu)** in the top right
 3. Choose **"Custom repositories"**
 4. In the dialog:
    - **Repository**: `https://github.com/SmartyVan/hass-geolocator`
    - **Category**: `Integration`
 5. Click **Add**
-
-The integration will then appear in your HACS Integrations list and can be installed and updated like any other.
+6. Search for and open **GeoLocator**
+7. Click **Download** in the bottom right corner
+8. Finally, choose **Download** in the pop-up dialogue
+9. Restart Home Assistant
+10. Navigate to Settings > Devices & Services
+11. Click **Add Integration** at the bottom
+12. Search for **GeoLocator**
 
 ### Or, Manual Installation
 
-1. Copy this repository to your Home Assistant config folder:
+1. Download the source code of the [latest release](https://github.com/SmartyVan/hass-geolocator/releases).
+2. Unzip the source code download.
+3. Copy **geolocator** from the **custom_components** directory you just downloaded to your Home Assistant **custom_components** directory:
    ```
-   custom_components/geolocator/
+   config/custom_components/geolocator/
    ```
 
-2. Restart Home Assistant.
+4. Restart Home Assistant.
 ---
 
 ## 📍 Usage
