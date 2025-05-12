@@ -78,8 +78,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             if api is not None:
                 try:
-                    geocode_raw = await api.reverse_geocode(lat, lon)
-                    timezone_id = await api.get_timezone(lat, lon)
+                    user_language = hass.config.language or "en"
+                    geocode_raw = await api.reverse_geocode(lat, lon, user_language)
+                    timezone_id = await api.get_timezone(lat, lon, user_language)
 
                     address_data = {
                         "current_address": api.format_full_address(geocode_raw),
@@ -117,18 +118,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if timezone_id:
                     tz = ZoneInfo(timezone_id)
                     dt = datetime.now(tz)
-                    locale = str(hass.config.language or "en_US")
+                    user_locale = hass.config.language or "en-US"
                     is_dst = dt.dst() is not None and dt.dst().total_seconds() != 0
                     zone_variant = 'daylight' if is_dst else 'standard'
+
                     def _get_full_timezone_name():
-                        from babel.dates import get_timezone
+                        from babel.dates import get_timezone, get_timezone_name
+                        from babel.core import Locale, UnknownLocaleError
+
                         tzinfo = get_timezone(timezone_id)
-                        from babel.core import Locale
-                        loc = Locale.parse(locale)
-                        return get_timezone_name(
-                            dt,
-                            locale=loc
-                        )
+
+                        try:
+                            loc = Locale.parse(user_locale, sep='-')
+                        except UnknownLocaleError:
+                            loc = Locale.parse("en-US", sep='-')
+
+                        return get_timezone_name(dt, locale=loc)
+
                     full_name = await hass.async_add_executor_job(_get_full_timezone_name)
                 else:
                     full_name = None
