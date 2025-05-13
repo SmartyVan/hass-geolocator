@@ -80,17 +80,18 @@ This will fetch the Reverse Geocode data and populate sensors (if using an API) 
 **Example Automation:**\
 This is a very basic automation. Consider using conditions to restrict location information udpates only when vehicle is (or has been) moving.
 ```yaml
-alias: Update Location Every 5 Minutes
-description: ""
+alias: "GeoLocator: Update Location"
+description: "Fetch Reverse Geocode and Timezone ID from API when zone.home is updated."
 triggers:
-  - trigger: time_pattern
-    minutes: /5
+  - trigger: state
+    entity_id:
+      - zone.home
 conditions: []
 actions:
   - action: geolocator.update_location
+    metadata: {}
     data: {}
 mode: single
-
 ```
 
 ### 🚨 Important:
