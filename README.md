@@ -124,7 +124,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 
 These are the currently supported APIs. Feel free to submit pull requests for other services.
 
-| API Service | Credentials | Notes | Current Address | Localization |
+| API Service | Credentials | Notes | Current Address | Localized |
 |-------------|-------------|-------|-----------------|:------------:|
 | **Google Maps**    | `API Key` | Enable Reverse Geocode & Timezone APIs. Be sure to add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
 | **GeoNames**       | `Username` | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web servcies (link at bottom of page).  | Full street address (US only) |
