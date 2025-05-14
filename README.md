@@ -3,6 +3,11 @@
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
 [![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/smartyvan/hass-geolocator)](https://github.com/smartyvan/hass-geolocator/releases)
+[![Join our Discord](https://img.shields.io/discord/1303421267545821245?label=Join%20Discord&logo=discord)](https://discord.gg/3rqeqES3zP)
+[![YouTube](https://img.shields.io/badge/YouTube-Smarty%20Van-red?logo=youtube&logoColor=white)](https://www.youtube.com/@SmartyVan)
+
+
+
 
 
 ### 📺 Watch the [YouTube video](https://www.youtube.com/watch?v=Kg4TQhNOonE) about this project:
@@ -126,7 +131,7 @@ These are the currently supported APIs. Feel free to submit pull requests for ot
 
 | Results | API Service | Credentials | Notes | Current Address | Localized |
 |:-------:|-------------|-------------|-------|-----------------|:------------:|
-|🟢| **Google Maps**    | `API Key` | Enable Reverse Geocode & Timezone APIs. Be sure to add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
+|🟢| **Google Maps**    | `API Key` | Enable Reverse Geocode & Timezone APIs. Add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
 |🟢| **OpenCage** | `API Key` | [Sign up](https://opencagedata.com) for a free account and retrieve an API key. \**free accounts can make 2,500 requests/day (1 request/second)* | Full street address | ✔︎ |
 |🟡| **GeoNames**       | `Username` | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web servcies (link at bottom of page).  | Full street address (US only) |
 |🟠| **BigDataCloud**   | None                 | Free - no API key required. | City, State, Country Only |
