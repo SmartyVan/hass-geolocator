@@ -4,6 +4,13 @@
 [![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/smartyvan/hass-geolocator)](https://github.com/smartyvan/hass-geolocator/releases)
 
+[![Join our Discord](https://img.shields.io/discord/1303421267545821245?label=Join%20Discord&logo=discord)](https://discord.gg/3rqeqES3zP)
+[![YouTube](https://img.shields.io/badge/YouTube-Smarty%20Van-red?logo=youtube&logoColor=white)](https://www.youtube.com/@SmartyVan)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/smartyvan)
+
+
+
+
 
 ### 📺 Watch the [YouTube video](https://www.youtube.com/watch?v=Kg4TQhNOonE) about this project:
 [<img width="350" alt="Smarty Van YouTube video" src="https://img.youtube.com/vi/Kg4TQhNOonE/maxresdefault.jpg"/>](https://www.youtube.com/watch?v=Kg4TQhNOonE)
@@ -124,12 +131,13 @@ This flexibility allows for maximum control over polling rates, and updates.
 
 These are the currently supported APIs. Feel free to submit pull requests for other services.
 
-| API Service | Credentials | Notes | Current Address | Localized |
-|-------------|-------------|-------|-----------------|:------------:|
-| **Google Maps**    | `API Key` | Enable Reverse Geocode & Timezone APIs. Be sure to add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
-| **GeoNames**       | `Username` | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web servcies (link at bottom of page).  | Full street address (US only) |
-| **BigDataCloud**   | None                 | Free - no API key required. | City, State, Country Only |
-| **Offline** | None | **No Reverse Geocode!** Some enclaves or borders are less accurate than the API solutions but works 100% locally using the timezonefinder library. | None |
+| Results | API Service | Credentials | Notes | Current Address | Localized |
+|:-------:|-------------|-------------|-------|-----------------|:------------:|
+|🟢| **Google Maps**    | `API Key` | Enable Reverse Geocode & Timezone APIs. Add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
+|🟢| **OpenCage** | `API Key` | [Sign up](https://opencagedata.com) for a free account and retrieve an API key. \**free accounts can make 2,500 requests/day (1 request/second)* | Full street address | ✔︎ |
+|🟡| **GeoNames**       | `Username` | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web servcies (link at bottom of page).  | Full street address (US only) |
+|🟠| **BigDataCloud**   | None                 | Free - no API key required. | City, State, Country Only |
+|🟠| **Offline** | None | **No Reverse Geocode!** Some enclaves or borders are less accurate than the API solutions but works 100% locally using the timezonefinder library. | None |
 
 *Only one service is used at a time (with fallback to the local python library). API/user key configuration is available via the UI.*
 

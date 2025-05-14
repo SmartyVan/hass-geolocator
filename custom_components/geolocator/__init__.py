@@ -8,6 +8,7 @@ from homeassistant.helpers.service import async_register_admin_service
 
 from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDER_META
 from .api.google import GoogleMapsAPI
+from .api.opencage import OpenCageAPI
 from .api.geonames import GeoNamesAPI
 from .api.bigdatacloud import BigDataCloudAPI
 
@@ -47,6 +48,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if provider == "google":
         api = GoogleMapsAPI(api_key)
+    elif provider == "opencage":
+        api = OpenCageAPI(api_key)
     elif provider == "geonames":
         api = GeoNamesAPI(api_key)
     elif provider == "bigdatacloud":
