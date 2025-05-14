@@ -1,4 +1,5 @@
-<img width="150" alt="GeoLocator" src="logo/icon.png"/>
+<img width="150" alt="GeoLocator" src="https://github.com/SmartyVan/hass-geolocator/blob/main/logo/icon.png?raw=true"/>
+
 
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
 [![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
