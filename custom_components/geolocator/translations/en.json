@@ -94,9 +94,5 @@
         "name": "Timezone Abbreviation"
       }
     }
-  },
-
-  "google": "Google Maps",
-  "geonames": "GeoNames",
-  "osm": "OpenStreetMap (Nominatim)"
+  }
 }
