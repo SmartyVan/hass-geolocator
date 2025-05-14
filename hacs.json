@@ -2,7 +2,6 @@
     "name": "GeoLocator",
     "content_in_root": false,
     "domains": ["integration"],
-    "country": "US",
     "homeassistant": "2024.4.0",
     "render_readme": true
   }
