@@ -1,7 +1,6 @@
 {
     "name": "GeoLocator",
     "content_in_root": false,
-    "domains": ["integration"],
     "homeassistant": "2024.4.0",
     "render_readme": true
   }
