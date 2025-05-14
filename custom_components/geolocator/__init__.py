@@ -20,6 +20,8 @@ from babel.dates import get_timezone_name
 from zoneinfo import ZoneInfo
 from datetime import datetime
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
