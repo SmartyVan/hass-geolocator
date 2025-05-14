@@ -1,7 +1,7 @@
 {
     "domain": "geolocator",
     "name": "GeoLocator",
-    "version": "0.2.7-beta",
+    "version": "0.2.8-beta",
     "dependencies": [],
     "documentation": "https://github.com/SmartyVan/hass-geolocator",
     "issue_tracker": "https://github.com/SmartyVan/hass-geolocator/issues",
