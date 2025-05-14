@@ -3,8 +3,10 @@
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
 [![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/smartyvan/hass-geolocator)](https://github.com/smartyvan/hass-geolocator/releases)
+
 [![Join our Discord](https://img.shields.io/discord/1303421267545821245?label=Join%20Discord&logo=discord)](https://discord.gg/3rqeqES3zP)
 [![YouTube](https://img.shields.io/badge/YouTube-Smarty%20Van-red?logo=youtube&logoColor=white)](https://www.youtube.com/@SmartyVan)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/smartyvan)
 
 
 
