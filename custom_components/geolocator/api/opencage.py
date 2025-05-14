@@ -40,7 +40,8 @@ class OpenCageAPI(GeoLocatorAPI):
         try:
             return data["results"][0]["components"].get("city") or \
                    data["results"][0]["components"].get("town") or \
-                   data["results"][0]["components"].get("village")
+                   data["results"][0]["components"].get("village") or \
+                   data["results"][0]["components"].get("county")
         except (IndexError, KeyError):
             return None
 
