@@ -2,7 +2,7 @@
 
 
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
-[![hacs badge](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/smartyvan/hass-geolocator)](https://github.com/smartyvan/hass-geolocator/releases)
 
 [![Join our Discord](https://img.shields.io/discord/1303421267545821245?label=Join%20Discord&logo=discord)](https://discord.gg/3rqeqES3zP)
@@ -35,6 +35,7 @@ Designed specifically for moving vehicles (vans, RVs, boats) that *MAY* not alwa
 This integration is not yet available in the HACS default store, however you can still install it via [HACS](https://www.hacs.xyz/docs/use/) as a custom repository:
 
 [![Open this repository in your Home Assistant instance.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SmartyVan&repository=hass-geolocator&category=integration)
+
 
 1. Click "Open HACS Repository" button above and install GeoLocator
 2. Restart Home Assistant
