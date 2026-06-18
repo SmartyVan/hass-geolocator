@@ -15,14 +15,18 @@
         "title": "API Credentials",
         "description": "Enter the API key or username required for the selected provider.",
         "data": {
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "max_requests_per_second": "Max requests per second (0 for unlimited)",
+          "max_requests_per_day": "Max requests per day (0 for unlimited)"
         }
       },
       "api_key": {
         "title": "API Credentials",
         "description": "Enter the API key or username required for the selected provider.",
         "data": {
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "max_requests_per_second": "Max requests per second (0 for unlimited)",
+          "max_requests_per_day": "Max requests per day (0 for unlimited)"
         }
       }
     },
@@ -50,7 +54,9 @@
         "title": "API Credentials",
         "description": "Enter the API key or username required for the selected provider.",
         "data": {
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "max_requests_per_second": "Max requests per second (0 for unlimited)",
+          "max_requests_per_day": "Max requests per day (0 for unlimited)"
         }
       }
     }
