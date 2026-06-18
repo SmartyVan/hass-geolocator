@@ -1,4 +1,5 @@
 import logging
+import time
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -6,7 +7,13 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.service import async_register_admin_service
 
-from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDER_META
+from .const import (
+    DOMAIN,
+    SERVICE_SET_TIMEZONE,
+    API_PROVIDER_META,
+    CONF_MAX_REQUESTS_PER_SECOND,
+    CONF_MAX_REQUESTS_PER_DAY,
+)
 from .api.google import GoogleMapsAPI
 from .api.opencage import OpenCageAPI
 from .api.geonames import GeoNamesAPI
@@ -42,6 +49,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     provider = config.get("api_provider", "google")
     api_key = config.get("api_key", "")
 
+    try:
+        max_requests_per_second = float(config.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0) or 0.0)
+    except (TypeError, ValueError):
+        max_requests_per_second = 0.0
+
+    try:
+        max_requests_per_day = int(config.get(CONF_MAX_REQUESTS_PER_DAY, 0) or 0)
+    except (TypeError, ValueError):
+        max_requests_per_day = 0
+
     original_provider = entry.data.get("api_provider", "google")
     if entry.options and provider != original_provider:
         _LOGGER.info("GeoLocator: API provider changed from '%s' to '%s' via options", original_provider, provider)
@@ -68,6 +85,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "last_timezone": None,
         "last_timezone_source": None,
         "entities": [],
+        "last_request_time": 0.0,
     }
 
     async def async_update_location_service(call: ServiceCall | None = None):
@@ -76,25 +94,49 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.debug("GeoLocator: Fetching location for lat=%s, lon=%s", lat, lon)
 
         try:
-            address_data = {}
+            address_data = hass.data[DOMAIN][entry.entry_id].get("last_address") or {}
             timezone_id = None
             source = None
             plus_code = olc.encode(lat, lon)
 
+            # Update plus code locally
+            if address_data:
+                address_data["plus_code"] = plus_code
+
             if api is not None:
                 try:
-                    user_language = hass.config.language or "en"
-                    geocode_raw = await api.reverse_geocode(lat, lon, user_language)
-                    timezone_id = await api.get_timezone(lat, lon, user_language)
+                    now = time.monotonic()
+                    last_request_time = hass.data[DOMAIN][entry.entry_id].get("last_request_time", 0.0)
 
-                    address_data = {
-                        "current_address": api.format_full_address(geocode_raw),
-                        "city": api.extract_city(geocode_raw),
-                        "state": api.extract_state_long(geocode_raw),
-                        "country": api.extract_country(geocode_raw),
-                        "plus_code": plus_code,
-                    }
-                    source = API_PROVIDER_META[provider]["name"]
+                    min_interval = 0.0
+                    if max_requests_per_second > 0:
+                        min_interval = max(min_interval, 1.0 / max_requests_per_second)
+                    if max_requests_per_day > 0:
+                        min_interval = max(min_interval, 86400.0 / max_requests_per_day)
+
+                    elapsed = now - last_request_time
+                    if elapsed < min_interval:
+                        _LOGGER.warning(
+                            "GeoLocator: API call rate limited. Last request was %0.2fs ago, min interval is %0.2fs. Skipping API call.",
+                            elapsed,
+                            min_interval
+                        )
+                    else:
+                        # Update request time immediately to prevent concurrent spam
+                        hass.data[DOMAIN][entry.entry_id]["last_request_time"] = now
+
+                        user_language = hass.config.language or "en"
+                        geocode_raw = await api.reverse_geocode(lat, lon, user_language)
+                        timezone_id = await api.get_timezone(lat, lon, user_language)
+
+                        address_data = {
+                            "current_address": api.format_full_address(geocode_raw),
+                            "city": api.extract_city(geocode_raw),
+                            "state": api.extract_state_long(geocode_raw),
+                            "country": api.extract_country(geocode_raw),
+                            "plus_code": plus_code,
+                        }
+                        source = API_PROVIDER_META[provider]["name"]
 
                 except Exception as e:
                     _LOGGER.warning("GeoLocator: Failed to update location: %s", e)

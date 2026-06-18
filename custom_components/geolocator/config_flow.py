@@ -5,7 +5,14 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, CONF_API_KEY, CONF_API_PROVIDER, API_PROVIDER_META
+from .const import (
+    DOMAIN,
+    CONF_API_KEY,
+    CONF_API_PROVIDER,
+    CONF_MAX_REQUESTS_PER_SECOND,
+    CONF_MAX_REQUESTS_PER_DAY,
+    API_PROVIDER_META,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,23 +55,36 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 title="GeoLocator",
                 data={
                     CONF_API_PROVIDER: provider,
-                    CONF_API_KEY: user_input.get(CONF_API_KEY, "")
+                    CONF_API_KEY: user_input.get(CONF_API_KEY, ""),
+                    CONF_MAX_REQUESTS_PER_SECOND: user_input.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0),
+                    CONF_MAX_REQUESTS_PER_DAY: user_input.get(CONF_MAX_REQUESTS_PER_DAY, 0),
                 }
             )
 
-        if provider_meta.get("needs_key"):
-            return self.async_show_form(
-                step_id="credentials",
-                data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
-                errors=self._errors,
-                description_placeholders={}
-            )
-        else:
-            # Skip credentials step if not needed
+        if provider == "offline":
             return self.async_create_entry(
                 title="GeoLocator",
-                data={CONF_API_PROVIDER: provider, CONF_API_KEY: ""}
+                data={
+                    CONF_API_PROVIDER: provider,
+                    CONF_API_KEY: "",
+                    CONF_MAX_REQUESTS_PER_SECOND: 0.0,
+                    CONF_MAX_REQUESTS_PER_DAY: 0,
+                }
             )
+
+        schema_dict = {}
+        if provider_meta.get("needs_key"):
+            schema_dict[vol.Required(CONF_API_KEY)] = str
+
+        schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_SECOND, default=0.0)] = vol.Coerce(float)
+        schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_DAY, default=0)] = vol.Coerce(int)
+
+        return self.async_show_form(
+            step_id="credentials",
+            data_schema=vol.Schema(schema_dict),
+            errors=self._errors,
+            description_placeholders={}
+        )
 
     @staticmethod
     @callback
@@ -114,22 +134,47 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
             CONF_API_KEY,
             self.config_entry.data.get(CONF_API_KEY, "")
         )
+        current_max_requests_per_second = self.config_entry.options.get(
+            CONF_MAX_REQUESTS_PER_SECOND,
+            self.config_entry.data.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0)
+        )
+        current_max_requests_per_day = self.config_entry.options.get(
+            CONF_MAX_REQUESTS_PER_DAY,
+            self.config_entry.data.get(CONF_MAX_REQUESTS_PER_DAY, 0)
+        )
 
-        if not provider_meta.get("needs_key"):
+        if provider == "offline":
             return self.async_create_entry(
                 title="",
-                data={CONF_API_PROVIDER: provider, CONF_API_KEY: ""}
+                data={
+                    CONF_API_PROVIDER: provider,
+                    CONF_API_KEY: "",
+                    CONF_MAX_REQUESTS_PER_SECOND: 0.0,
+                    CONF_MAX_REQUESTS_PER_DAY: 0,
+                }
             )
 
         if user_input is not None:
             return self.async_create_entry(
                 title="",
-                data={CONF_API_PROVIDER: provider, CONF_API_KEY: user_input.get(CONF_API_KEY, "")}
+                data={
+                    CONF_API_PROVIDER: provider,
+                    CONF_API_KEY: user_input.get(CONF_API_KEY, ""),
+                    CONF_MAX_REQUESTS_PER_SECOND: user_input.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0),
+                    CONF_MAX_REQUESTS_PER_DAY: user_input.get(CONF_MAX_REQUESTS_PER_DAY, 0),
+                }
             )
+
+        schema_dict = {}
+        if provider_meta.get("needs_key"):
+            schema_dict[vol.Required(CONF_API_KEY, default=current_key)] = str
+
+        schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_SECOND, default=current_max_requests_per_second)] = vol.Coerce(float)
+        schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_DAY, default=current_max_requests_per_day)] = vol.Coerce(int)
 
         return self.async_show_form(
             step_id="options_credentials",
-            data_schema=vol.Schema({vol.Required(CONF_API_KEY, default=current_key): str}),
+            data_schema=vol.Schema(schema_dict),
             errors=self._errors,
             description_placeholders={}
         )
