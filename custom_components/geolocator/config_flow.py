@@ -9,12 +9,33 @@ from .const import (
     DOMAIN,
     CONF_API_KEY,
     CONF_API_PROVIDER,
+    CONF_USER_AGENT,
     CONF_MAX_REQUESTS_PER_SECOND,
     CONF_MAX_REQUESTS_PER_DAY,
     API_PROVIDER_META,
+    DEFAULT_OSM_USER_AGENT,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+OSM_POLICY_NOTICE = (
+    "OpenStreetMap Nominatim usage policy applies: requests are capped at 1/second, "
+    "you must supply a valid User-Agent that identifies this installation, and results "
+    "are © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright). "
+    "Full policy: https://operations.osmfoundation.org/policies/nominatim/"
+)
+
+
+def _provider_label(meta: dict) -> str:
+    if meta.get("needs_user_agent"):
+        return f"{meta['name']} (User-Agent required)"
+    if not meta.get("needs_key"):
+        return f"{meta['name']} (no key required)"
+    return meta["name"]
+
+
+def _provider_notice(provider: str) -> str:
+    return OSM_POLICY_NOTICE if provider == "osm" else ""
 
 
 class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -32,8 +53,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_credentials()
 
         provider_options = {
-            k: f"{v['name']} (no key required)" if not v['needs_key'] else v['name']
-            for k, v in API_PROVIDER_META.items()
+            k: _provider_label(v) for k, v in API_PROVIDER_META.items()
         }
 
         return self.async_show_form(
@@ -56,6 +76,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_API_PROVIDER: provider,
                     CONF_API_KEY: user_input.get(CONF_API_KEY, ""),
+                    CONF_USER_AGENT: user_input.get(CONF_USER_AGENT, ""),
                     CONF_MAX_REQUESTS_PER_SECOND: user_input.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0),
                     CONF_MAX_REQUESTS_PER_DAY: user_input.get(CONF_MAX_REQUESTS_PER_DAY, 0),
                 }
@@ -67,6 +88,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_API_PROVIDER: provider,
                     CONF_API_KEY: "",
+                    CONF_USER_AGENT: "",
                     CONF_MAX_REQUESTS_PER_SECOND: 0.0,
                     CONF_MAX_REQUESTS_PER_DAY: 0,
                 }
@@ -75,6 +97,8 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema_dict = {}
         if provider_meta.get("needs_key"):
             schema_dict[vol.Required(CONF_API_KEY)] = str
+        if provider_meta.get("needs_user_agent"):
+            schema_dict[vol.Required(CONF_USER_AGENT, default=DEFAULT_OSM_USER_AGENT)] = str
 
         schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_SECOND, default=0.0)] = vol.Coerce(float)
         schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_DAY, default=0)] = vol.Coerce(int)
@@ -83,7 +107,7 @@ class GeoLocatorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="credentials",
             data_schema=vol.Schema(schema_dict),
             errors=self._errors,
-            description_placeholders={}
+            description_placeholders={"provider_notice": _provider_notice(provider)}
         )
 
     @staticmethod
@@ -106,8 +130,7 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
             return await self.async_step_options_credentials()
 
         provider_options = {
-            k: f"{v['name']} (no key required)" if not v['needs_key'] else v['name']
-            for k, v in API_PROVIDER_META.items()
+            k: _provider_label(v) for k, v in API_PROVIDER_META.items()
         }
 
         current_provider = self.config_entry.options.get(
@@ -134,6 +157,10 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
             CONF_API_KEY,
             self.config_entry.data.get(CONF_API_KEY, "")
         )
+        current_user_agent = self.config_entry.options.get(
+            CONF_USER_AGENT,
+            self.config_entry.data.get(CONF_USER_AGENT, "") or DEFAULT_OSM_USER_AGENT
+        )
         current_max_requests_per_second = self.config_entry.options.get(
             CONF_MAX_REQUESTS_PER_SECOND,
             self.config_entry.data.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0)
@@ -149,6 +176,7 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
                 data={
                     CONF_API_PROVIDER: provider,
                     CONF_API_KEY: "",
+                    CONF_USER_AGENT: "",
                     CONF_MAX_REQUESTS_PER_SECOND: 0.0,
                     CONF_MAX_REQUESTS_PER_DAY: 0,
                 }
@@ -160,6 +188,7 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
                 data={
                     CONF_API_PROVIDER: provider,
                     CONF_API_KEY: user_input.get(CONF_API_KEY, ""),
+                    CONF_USER_AGENT: user_input.get(CONF_USER_AGENT, ""),
                     CONF_MAX_REQUESTS_PER_SECOND: user_input.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0),
                     CONF_MAX_REQUESTS_PER_DAY: user_input.get(CONF_MAX_REQUESTS_PER_DAY, 0),
                 }
@@ -168,6 +197,8 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
         schema_dict = {}
         if provider_meta.get("needs_key"):
             schema_dict[vol.Required(CONF_API_KEY, default=current_key)] = str
+        if provider_meta.get("needs_user_agent"):
+            schema_dict[vol.Required(CONF_USER_AGENT, default=current_user_agent)] = str
 
         schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_SECOND, default=current_max_requests_per_second)] = vol.Coerce(float)
         schema_dict[vol.Optional(CONF_MAX_REQUESTS_PER_DAY, default=current_max_requests_per_day)] = vol.Coerce(int)
@@ -176,5 +207,5 @@ class GeoLocatorOptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
             step_id="options_credentials",
             data_schema=vol.Schema(schema_dict),
             errors=self._errors,
-            description_placeholders={}
+            description_placeholders={"provider_notice": _provider_notice(provider)}
         )

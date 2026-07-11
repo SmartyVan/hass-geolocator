@@ -8,3 +8,7 @@ class GeoLocatorAPI:
     async def get_timezone(self, latitude: float, longitude: float, language: str = "en") -> str:
         """Return an IANA time zone string."""
         raise NotImplementedError
+
+    def extract_attribution(self, data: dict) -> str | None:
+        """Return an attribution string that must be displayed alongside this data, if required."""
+        return None

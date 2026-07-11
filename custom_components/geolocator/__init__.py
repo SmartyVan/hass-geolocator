@@ -1,5 +1,4 @@
 import logging
-import time
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -11,21 +10,19 @@ from .const import (
     DOMAIN,
     SERVICE_SET_TIMEZONE,
     API_PROVIDER_META,
+    CONF_API_PROVIDER,
+    CONF_API_KEY,
+    CONF_USER_AGENT,
     CONF_MAX_REQUESTS_PER_SECOND,
     CONF_MAX_REQUESTS_PER_DAY,
+    DEFAULT_OSM_USER_AGENT,
 )
 from .api.google import GoogleMapsAPI
 from .api.opencage import OpenCageAPI
 from .api.geonames import GeoNamesAPI
 from .api.bigdatacloud import BigDataCloudAPI
-
-from timezonefinder import TimezoneFinder
-
-from openlocationcode import openlocationcode as olc
-
-from babel.dates import get_timezone_name
-from zoneinfo import ZoneInfo
-from datetime import datetime
+from .api.osm import OSMAPI
+from .coordinator import GeoLocatorUpdateCoordinator
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -46,8 +43,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     config = entry.options if entry.options else entry.data
-    provider = config.get("api_provider", "google")
-    api_key = config.get("api_key", "")
+    provider = config.get(CONF_API_PROVIDER, "google")
+    api_key = config.get(CONF_API_KEY, "")
+    user_agent = config.get(CONF_USER_AGENT) or DEFAULT_OSM_USER_AGENT
 
     try:
         max_requests_per_second = float(config.get(CONF_MAX_REQUESTS_PER_SECOND, 0.0) or 0.0)
@@ -59,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except (TypeError, ValueError):
         max_requests_per_day = 0
 
-    original_provider = entry.data.get("api_provider", "google")
+    original_provider = entry.data.get(CONF_API_PROVIDER, "google")
     if entry.options and provider != original_provider:
         _LOGGER.info("GeoLocator: API provider changed from '%s' to '%s' via options", original_provider, provider)
     else:
@@ -73,153 +71,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         api = GeoNamesAPI(api_key)
     elif provider == "bigdatacloud":
         api = BigDataCloudAPI()
+    elif provider == "osm":
+        api = OSMAPI(user_agent=user_agent)
     elif provider == "offline":
         api = None
     else:
         raise ValueError(f"Unsupported API provider: {provider}")
 
+    coordinator = GeoLocatorUpdateCoordinator(
+        hass,
+        api=api,
+        provider=provider,
+        max_requests_per_second=max_requests_per_second,
+        max_requests_per_day=max_requests_per_day,
+    )
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "api": api,
         "entry": entry,
-        "last_address": None,
-        "last_timezone": None,
-        "last_timezone_source": None,
-        "entities": [],
-        "last_request_time": 0.0,
+        "coordinator": coordinator,
     }
 
+    await coordinator.async_config_entry_first_refresh()
+
     async def async_update_location_service(call: ServiceCall | None = None):
-        lat = hass.config.latitude
-        lon = hass.config.longitude
-        _LOGGER.debug("GeoLocator: Fetching location for lat=%s, lon=%s", lat, lon)
+        await coordinator.async_request_refresh()
 
-        try:
-            address_data = hass.data[DOMAIN][entry.entry_id].get("last_address") or {}
-            timezone_id = None
-            source = None
-            plus_code = olc.encode(lat, lon)
-
-            # Update plus code locally
-            if address_data:
-                address_data["plus_code"] = plus_code
-
-            if api is not None:
-                try:
-                    now = time.monotonic()
-                    last_request_time = hass.data[DOMAIN][entry.entry_id].get("last_request_time", 0.0)
-
-                    min_interval = 0.0
-                    if max_requests_per_second > 0:
-                        min_interval = max(min_interval, 1.0 / max_requests_per_second)
-                    if max_requests_per_day > 0:
-                        min_interval = max(min_interval, 86400.0 / max_requests_per_day)
-
-                    elapsed = now - last_request_time
-                    if elapsed < min_interval:
-                        _LOGGER.warning(
-                            "GeoLocator: API call rate limited. Last request was %0.2fs ago, min interval is %0.2fs. Skipping API call.",
-                            elapsed,
-                            min_interval
-                        )
-                    else:
-                        # Update request time immediately to prevent concurrent spam
-                        hass.data[DOMAIN][entry.entry_id]["last_request_time"] = now
-
-                        user_language = hass.config.language or "en"
-                        geocode_raw = await api.reverse_geocode(lat, lon, user_language)
-                        timezone_id = await api.get_timezone(lat, lon, user_language)
-
-                        address_data = {
-                            "current_address": api.format_full_address(geocode_raw),
-                            "city": api.extract_city(geocode_raw),
-                            "state": api.extract_state_long(geocode_raw),
-                            "country": api.extract_country(geocode_raw),
-                            "plus_code": plus_code,
-                        }
-                        source = API_PROVIDER_META[provider]["name"]
-
-                except Exception as e:
-                    _LOGGER.warning("GeoLocator: Failed to update location: %s", e)
-
-            if not timezone_id:
-                try:
-                    def _find_timezone():
-                        tf = TimezoneFinder(in_memory=True)
-                        try:
-                            return tf.timezone_at(lat=lat, lng=lon)
-                        except Exception as e:
-                            _LOGGER.warning("GeoLocator: Exception while finding timezone: %s", e)
-                            return None
-
-                    tz = await hass.async_add_executor_job(_find_timezone)
-                    if tz:
-                        timezone_id = tz
-                        source = "Local Fallback"
-                    else:
-                        source = "Error"
-                except Exception as e:
-                    _LOGGER.warning("GeoLocator: Failed to find local timezone: %s", e)
-
-            # Add full timezone name using Babel and zoneinfo
-            try:
-                if timezone_id:
-                    tz = ZoneInfo(timezone_id)
-                    dt = datetime.now(tz)
-                    user_locale = hass.config.language or "en-US"
-                    is_dst = dt.dst() is not None and dt.dst().total_seconds() != 0
-                    zone_variant = 'daylight' if is_dst else 'standard'
-
-                    def _get_full_timezone_name():
-                        from babel.dates import get_timezone, get_timezone_name
-                        from babel.core import Locale, UnknownLocaleError
-
-                        tzinfo = get_timezone(timezone_id)
-
-                        try:
-                            loc = Locale.parse(user_locale, sep='-')
-                        except UnknownLocaleError:
-                            loc = Locale.parse("en-US", sep='-')
-
-                        return get_timezone_name(dt, locale=loc)
-
-                    full_name = await hass.async_add_executor_job(_get_full_timezone_name)
-                else:
-                    full_name = None
-            except Exception as e:
-                _LOGGER.warning("GeoLocator: Failed to get full timezone name: %s", e)
-                full_name = None
-
-            hass.data[DOMAIN][entry.entry_id]["last_address"] = address_data
-            hass.data[DOMAIN][entry.entry_id]["last_timezone"] = timezone_id
-            hass.data[DOMAIN][entry.entry_id]["last_timezone_source"] = source
-            hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code
-            hass.data[DOMAIN][entry.entry_id]["timezone_full"] = full_name
-
-            # Call the timezone-setting service with the computed timezone_id
-            if timezone_id:
-                try:
-                    await hass.services.async_call(
-                        DOMAIN,
-                        SERVICE_SET_TIMEZONE,
-                        {"timezone": timezone_id},
-                        blocking=True
-                    )
-                except Exception as e:
-                    _LOGGER.error("GeoLocator: Failed to call set_home_timezone: %s", e)
-
-            for entity in hass.data[DOMAIN][entry.entry_id]["entities"]:
-                entity.async_schedule_update_ha_state(True)
-
-        except Exception as e:
-            _LOGGER.exception("GeoLocator: Unexpected error during location update: %s", e)
-
-
-    hass.data[DOMAIN][entry.entry_id]["update_func"] = async_update_location_service
     hass.services.async_register(DOMAIN, "update_location", async_update_location_service)
 
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
 
-    await async_update_location_service()
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
 

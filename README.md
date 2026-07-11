@@ -132,9 +132,12 @@ These are the currently supported APIs. Feel free to submit pull requests for ot
 |🟢| **OpenCage** | `API Key` | [Sign up](https://opencagedata.com) for a free account and retrieve an API key. \**free accounts can make 2,500 requests/day (1 request/second)* | Full street address | ✔︎ |
 |🟡| **GeoNames**       | `Username` | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web servcies (link at bottom of page).  | Full street address (US only) |
 |🟠| **BigDataCloud**   | None                 | Free - no API key required. | City, State, Country Only |
+|🟢| **OpenStreetMap (Nominatim)** | `User-Agent` | Free - no API key required, but you must provide a `User-Agent` identifying your installation. Hard-capped at 1 request/second per the [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/); results are © OpenStreetMap contributors, ODbL 1.0, and attribution is exposed on the `current_address` sensor. | Full street address | ✔︎ |
 |🟠| **Offline** | None | **No Reverse Geocode!** Some enclaves or borders are less accurate than the API solutions but works 100% locally using the timezonefinder library. | None |
 
 *Only one service is used at a time (with fallback to the local python library). API/user key configuration is available via the UI.*
+
+> **Nominatim usage policy:** when using the OpenStreetMap provider, GeoLocator enforces a hard floor of 1 request/second regardless of any rate limit you configure, always sends the `User-Agent` you provide when setting up the integration, and surfaces the required ODbL attribution as an `attribution` attribute on `sensor.geolocator_current_address`. See the [full policy](https://operations.osmfoundation.org/policies/nominatim/) before relying on this provider for high-volume use.
 
 ---
 
