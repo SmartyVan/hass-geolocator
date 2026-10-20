@@ -4,6 +4,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service import async_register_admin_service
 
 from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDER_META
@@ -48,14 +49,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.info("GeoLocator: Using API provider: %s", provider)
 
+    session = async_get_clientsession(hass)
     if provider == "google":
-        api = GoogleMapsAPI(api_key)
+        api = GoogleMapsAPI(session, api_key)
     elif provider == "opencage":
-        api = OpenCageAPI(api_key)
+        api = OpenCageAPI(session, api_key)
     elif provider == "geonames":
-        api = GeoNamesAPI(api_key)
+        api = GeoNamesAPI(session, api_key)
     elif provider == "bigdatacloud":
-        api = BigDataCloudAPI()
+        api = BigDataCloudAPI(session)
     elif provider == "offline":
         api = None
     else:
@@ -85,7 +87,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 try:
                     user_language = hass.config.language or "en"
                     geocode_raw = await api.reverse_geocode(lat, lon, user_language)
-                    timezone_id = await api.get_timezone(lat, lon, user_language)
+                    # OpenCage and BigDataCloud include the timezone in the geocode response,
+                    # so only make a separate timezone request when it's not there
+                    timezone_id = api.extract_timezone(geocode_raw) or await api.get_timezone(lat, lon, user_language)
 
                     address_data = {
                         "current_address": api.format_full_address(geocode_raw),
@@ -97,7 +101,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     source = API_PROVIDER_META[provider]["name"]
 
                 except Exception as e:
-                    _LOGGER.warning("GeoLocator: Failed to update location: %s", e)
+                    _LOGGER.warning("GeoLocator: %s lookup failed, falling back to local timezone: %s", API_PROVIDER_META[provider]["name"], str(e) or type(e).__name__)
+                    address_data = {}
+                    timezone_id = None
 
             if not timezone_id:
                 try:
@@ -188,5 +194,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+    # Let HA run the unload callbacks; calling unload/setup directly added another update listener on every reload
+    await hass.config_entries.async_reload(entry.entry_id)
