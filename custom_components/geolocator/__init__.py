@@ -17,6 +17,8 @@ from timezonefinder import TimezoneFinder
 
 from openlocationcode import openlocationcode as olc
 
+from pygeomag import GeoMag, calculate_decimal_year
+
 from babel.dates import get_timezone_name
 from zoneinfo import ZoneInfo
 from datetime import datetime
@@ -126,6 +128,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 except Exception as e:
                     _LOGGER.warning("GeoLocator: Failed to find local timezone: %s", e)
 
+            # Magnetic declination from the World Magnetic Model (computed locally, works offline)
+            def _calculate_declination():
+                geo_mag = GeoMag()  # bundled WMM coefficients (WMM2025, valid 2025.0-2030.0)
+                result = geo_mag.calculate(
+                    glat=lat,
+                    glon=lon,
+                    alt=(hass.config.elevation or 0) / 1000,  # metres -> km
+                    time=calculate_decimal_year(datetime.now()),
+                )
+                return round(result.d, 2)
+
+            try:
+                declination = await hass.async_add_executor_job(_calculate_declination)
+            except Exception as e:
+                _LOGGER.warning("GeoLocator: Failed to calculate magnetic declination: %s", e)
+                declination = None
+
             # Add full timezone name using Babel and zoneinfo
             try:
                 if timezone_id:
@@ -160,6 +179,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data[DOMAIN][entry.entry_id]["last_timezone_source"] = source
             hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code
             hass.data[DOMAIN][entry.entry_id]["timezone_full"] = full_name
+            hass.data[DOMAIN][entry.entry_id]["magnetic_declination"] = declination
 
             # Only write the HA core config when the timezone actually changed
             if timezone_id and timezone_id != hass.config.time_zone:

@@ -118,6 +118,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 | `sensor.geolocator_timezone_abbreviation` | Timezone Abbreviation (`CDT`) | Local |
 | `sensor.geolocator_data_source` | API provider used for current data (*or Offline Fallback*)  | Local |
 | `sensor.geolocator_plus_code` | Full [Plus Code](https://maps.google.com/pluscodes/) for current location | Local |
+| `sensor.geolocator_magnetic_declination` | Magnetic declination in degrees from the [World Magnetic Model](https://www.ncei.noaa.gov/products/world-magnetic-model) (WMM2025). Positive = east of true north, negative = west. Add it to a compass heading to get a true heading. Uses `zone.home` coordinates and the Home Assistant elevation setting. | Local |
 
 \* *these sensors are only created/updated when using an API - they will also be unavailable when GeoLocator falls back to the local Python library*
 

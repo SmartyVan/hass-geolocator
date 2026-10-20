@@ -95,6 +95,9 @@
       },
       "geolocator_timezone_abbreviation": {
         "name": "Timezone Abbreviation"
+      },
+      "geolocator_magnetic_declination": {
+        "name": "Magnetic Declination"
       }
     }
   }
