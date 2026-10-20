@@ -40,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     provider = entry.options.get("api_provider") or entry.data.get("api_provider", "google")
 
     for key, name in SENSOR_KEYS.items():
-        if provider == "offline" and key not in ("timezone_id", "timezone_abbreviation", "timezone_source"):
+        if provider == "offline" and key not in ("timezone_id", "timezone_full", "timezone_abbreviation", "timezone_source", "plus_code"):
             continue
         if key == "timezone_source":
             sensors.append(TimezoneSourceSensor(hass=hass, entry=entry))

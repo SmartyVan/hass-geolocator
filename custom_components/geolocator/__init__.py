@@ -159,8 +159,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data[DOMAIN][entry.entry_id]["last_plus_code"] = plus_code
             hass.data[DOMAIN][entry.entry_id]["timezone_full"] = full_name
 
-            # Call the timezone-setting service with the computed timezone_id
-            if timezone_id:
+            # Only write the HA core config when the timezone actually changed
+            if timezone_id and timezone_id != hass.config.time_zone:
                 try:
                     await hass.services.async_call(
                         DOMAIN,
