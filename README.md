@@ -1,4 +1,4 @@
-<img width="150" alt="GeoLocator" src="https://github.com/SmartyVan/hass-geolocator/blob/main/logo/icon.png?raw=true"/>
+<img width="150" alt="GeoLocator" src="https://github.com/SmartyVan/hass-geolocator/blob/main/custom_components/geolocator/brand/icon.png?raw=true"/>
 
 
 # GeoLocator by [SmartyVan](https://www.youtube.com/@SmartyVan)
@@ -24,20 +24,20 @@ This integration also solves a major problem for mobile Home Assistant servers: 
 ### OFFLINE happens
 Designed specifically for moving vehicles (vans, RVs, boats) that *MAY* not always have an internet connection, GeoLocator falls back to a local python library ([timezonefinder](https://pypi.org/project/timezonefinder/)) when no network connection is available. This method is less accurate, but works offline.
 
-*Optionally*: GeoLocator can be used in `Offline` mode to force the use of the local timezonefinder library at all times to set system timezone — in this mode, no reverse geocode data will be retrived.
+*Optionally*: GeoLocator can be used in `Offline` mode to force the use of the local timezonefinder library at all times to set system timezone — in this mode, no reverse geocode data will be retrieved. The timezone, Plus Code and magnetic declination sensors still work.
 
 ---
 
 ## 🔧 Installation
 
-### HACS Installation (Custom Repository)
+### HACS Installation
 
-This integration is not yet available in the HACS default store, however you can still install it via [HACS](https://www.hacs.xyz/docs/use/) as a custom repository:
+GeoLocator is available in the [HACS](https://www.hacs.xyz/docs/use/) default store:
 
 [![Open this repository in your Home Assistant instance.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SmartyVan&repository=hass-geolocator&category=integration)
 
 
-1. Click "Open HACS Repository" button above and install GeoLocator
+1. Click the button above (or search for **GeoLocator** in HACS) and download it
 2. Restart Home Assistant
 3. Navigate to Settings > Devices & Services
 4. Click **Add Integration** at the bottom
