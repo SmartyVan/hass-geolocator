@@ -1,8 +1,8 @@
 from .base import GeoLocatorAPI, GeoLocatorAPIError
 
-GEONAMES_REVERSE_URL = "http://api.geonames.org/findNearestAddressJSON"
-GEONAMES_PLACE_URL = "http://api.geonames.org/findNearbyPlaceNameJSON"
-GEONAMES_TIMEZONE_URL = "http://api.geonames.org/timezoneJSON"
+GEONAMES_REVERSE_URL = "https://secure.geonames.org/findNearestAddressJSON"
+GEONAMES_PLACE_URL = "https://secure.geonames.org/findNearbyPlaceNameJSON"
+GEONAMES_TIMEZONE_URL = "https://secure.geonames.org/timezoneJSON"
 
 # GeoNames status codes that mean "nothing here" rather than a failure
 # (11 = record does not exist, 15 = no result found)
@@ -80,9 +80,12 @@ class GeoNamesAPI(GeoLocatorAPI):
         return city
 
     def extract_state_long(self, data):
-        reverse_top = self._get_top_result(data["reverse"])
-        return reverse_top.get("adminName1")
+        # The address lookup only works in the US and returns nothing in rural areas,
+        # so fall back to the nearby populated place
+        reverse_top = self._get_top_result(data.get("reverse", {}))
+        place_top = self._get_top_result(data.get("place", {}))
+        return reverse_top.get("adminName1") or place_top.get("adminName1")
 
     def extract_country(self, data):
-        place_top = self._get_top_result(data["place"])
+        place_top = self._get_top_result(data.get("place", {}))
         return place_top.get("countryName")
