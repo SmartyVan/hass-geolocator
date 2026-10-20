@@ -110,6 +110,7 @@ This flexibility allows for maximum control over polling rates, and updates.
 |:-------|:------------|:------|
 | `sensor.geolocator_current_address`* | Formatted location address | API |
 | `sensor.geolocator_city`* | Locality: city name, falling back to town, village, hamlet or county when you're outside city limits. *(For new installs the entity ID is `sensor.geolocator_locality`.)* | API |
+| `sensor.geolocator_county`* | County name (or the equivalent second-level division outside the US, e.g. Cumbria in England) | API |
 | `sensor.geolocator_state`* | State name | API |
 | `sensor.geolocator_country`* | Country name | API |
 | `sensor.geolocator_timezone_id` | Timezone ID (`America/Chicago`) | API / Local Fallback |

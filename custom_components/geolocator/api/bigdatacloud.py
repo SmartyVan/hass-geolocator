@@ -41,11 +41,10 @@ class BigDataCloudAPI(GeoLocatorAPI):
         return None  # Not available from BigDataCloud
 
     def extract_locality(self, data):
-        if data.get("locality"):
-            return data["locality"]
-        if data.get("city"):
-            return data["city"]
-        # Fall back to the county (adminLevel 6 in the US)
+        return data.get("locality") or data.get("city") or self.extract_county(data)
+
+    def extract_county(self, data):
+        # adminLevel 6 is the county in the US; elsewhere it's the equivalent second-level division
         for item in data.get("localityInfo", {}).get("administrative", []):
             if item.get("adminLevel") == 6 and item.get("name"):
                 return item["name"]

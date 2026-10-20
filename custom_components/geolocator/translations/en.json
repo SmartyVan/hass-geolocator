@@ -78,6 +78,9 @@
       "geolocator_city": {
         "name": "Locality"
       },
+      "geolocator_county": {
+        "name": "County"
+      },
       "geolocator_state": {
         "name": "State"
       },

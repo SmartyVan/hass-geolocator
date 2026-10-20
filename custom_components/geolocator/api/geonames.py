@@ -23,7 +23,7 @@ class GeoNamesAPI(GeoLocatorAPI):
     async def reverse_geocode(self, lat, lon, language="en"):
         reverse_data = await self._get_json(GEONAMES_REVERSE_URL, {"lat": lat, "lng": lon, "username": self.username})
         self._check_status(reverse_data)
-        place_data = await self._get_json(GEONAMES_PLACE_URL, {"lat": lat, "lng": lon, "username": self.username, "cities": "cities500"})
+        place_data = await self._get_json(GEONAMES_PLACE_URL, {"lat": lat, "lng": lon, "username": self.username, "cities": "cities500", "style": "FULL"})
         self._check_status(place_data)
         return {"reverse": reverse_data, "place": place_data}
 
@@ -78,6 +78,13 @@ class GeoNamesAPI(GeoLocatorAPI):
             locality = place_top.get("name") or place_top.get("adminName2")  # Fallback to nearby populated place name
 
         return locality
+
+    def extract_county(self, data):
+        reverse_top = self._get_top_result(data.get("reverse", {}))
+        if reverse_top.get("adminName2"):
+            return reverse_top["adminName2"]
+        place_top = self._get_top_result(data.get("place", {}))
+        return place_top.get("adminName2") or None
 
     def extract_state_long(self, data):
         # The address lookup only works in the US and returns nothing in rural areas,

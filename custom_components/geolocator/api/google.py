@@ -72,6 +72,9 @@ class GoogleMapsAPI(GeoLocatorAPI):
                 return value
         return None
 
+    def extract_county(self, data):
+        return self._get_component(data, "administrative_area_level_2")
+
     def extract_state_long(self, data):
         return self._get_component(data, "administrative_area_level_1")
 
