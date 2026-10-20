@@ -76,7 +76,10 @@
         "name": "Neighborhood"
       },
       "geolocator_city": {
-        "name": "City"
+        "name": "Locality"
+      },
+      "geolocator_county": {
+        "name": "County"
       },
       "geolocator_state": {
         "name": "State"
@@ -92,6 +95,9 @@
       },
       "geolocator_timezone_abbreviation": {
         "name": "Timezone Abbreviation"
+      },
+      "geolocator_magnetic_declination": {
+        "name": "Magnetic Declination"
       }
     }
   }

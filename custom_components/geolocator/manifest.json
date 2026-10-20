@@ -7,7 +7,8 @@
     "documentation": "https://github.com/SmartyVan/hass-geolocator",
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/SmartyVan/hass-geolocator/issues",
-    "requirements": ["timezonefinder==4.5.0", "openlocationcode", "Babel>=2.9.0"],
-    "version": "0.3.1-beta"
+    "requirements": ["timezonefinder==4.5.0", "openlocationcode", "Babel>=2.9.0", "pygeomag==1.1.0"],
+    "single_config_entry": true,
+    "version": "0.4.0"
   }
   
