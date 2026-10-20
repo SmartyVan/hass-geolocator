@@ -35,14 +35,15 @@ class OpenCageAPI(GeoLocatorAPI):
         except (IndexError, KeyError):
             return ""
 
-    def extract_city(self, data):
+    def extract_locality(self, data):
         try:
-            return data["results"][0]["components"].get("city") or \
-                   data["results"][0]["components"].get("town") or \
-                   data["results"][0]["components"].get("village") or \
-                   data["results"][0]["components"].get("county")
+            components = data["results"][0]["components"]
         except (IndexError, KeyError):
             return None
+        for key in ("city", "town", "village", "hamlet", "_normalized_city", "municipality", "county"):
+            if components.get(key):
+                return components[key]
+        return None
 
     def extract_state_long(self, data):
         try:

@@ -57,8 +57,20 @@ class GoogleMapsAPI(GeoLocatorAPI):
     def extract_neighborhood(self, data):
         return self._get_component(data, "neighborhood")
 
-    def extract_city(self, data):
-        return self._get_component(data, "locality")
+    def extract_locality(self, data):
+        # City first, then progressively broader areas for rural locations.
+        # postal_town is what Google uses for towns in the UK and Sweden.
+        for type_name in (
+            "locality",
+            "postal_town",
+            "sublocality",
+            "administrative_area_level_3",
+            "administrative_area_level_2",
+        ):
+            value = self._get_component(data, type_name)
+            if value:
+                return value
+        return None
 
     def extract_state_long(self, data):
         return self._get_component(data, "administrative_area_level_1")

@@ -40,8 +40,16 @@ class BigDataCloudAPI(GeoLocatorAPI):
     def extract_neighborhood(self, data):
         return None  # Not available from BigDataCloud
 
-    def extract_city(self, data):
-        return data.get("locality")
+    def extract_locality(self, data):
+        if data.get("locality"):
+            return data["locality"]
+        if data.get("city"):
+            return data["city"]
+        # Fall back to the county (adminLevel 6 in the US)
+        for item in data.get("localityInfo", {}).get("administrative", []):
+            if item.get("adminLevel") == 6 and item.get("name"):
+                return item["name"]
+        return None
 
     def extract_state_long(self, data):
         return data.get("principalSubdivision")

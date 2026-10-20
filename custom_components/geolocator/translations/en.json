@@ -76,7 +76,7 @@
         "name": "Neighborhood"
       },
       "geolocator_city": {
-        "name": "City"
+        "name": "Locality"
       },
       "geolocator_state": {
         "name": "State"

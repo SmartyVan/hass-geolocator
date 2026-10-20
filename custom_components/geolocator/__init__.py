@@ -93,7 +93,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                     address_data = {
                         "current_address": api.format_full_address(geocode_raw),
-                        "city": api.extract_city(geocode_raw),
+                        # Key stays "city" so existing entity IDs are preserved
+                        "city": api.extract_locality(geocode_raw),
                         "state": api.extract_state_long(geocode_raw),
                         "country": api.extract_country(geocode_raw),
                         "plus_code": plus_code,

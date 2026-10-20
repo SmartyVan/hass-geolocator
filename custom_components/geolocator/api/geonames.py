@@ -69,15 +69,15 @@ class GeoNamesAPI(GeoLocatorAPI):
         return ", ".join(filter(None, [street_line, placename, region_line, country]))
 
 
-    def extract_city(self, data):
+    def extract_locality(self, data):
         reverse_top = self._get_top_result(data.get("reverse", {}))
-        city = reverse_top.get("placename")
+        locality = reverse_top.get("placename")
 
-        if not city:
+        if not locality:
             place_top = self._get_top_result(data.get("place", {}))
-            city = place_top.get("name")  # Fallback to nearby populated place name
+            locality = place_top.get("name") or place_top.get("adminName2")  # Fallback to nearby populated place name
 
-        return city
+        return locality
 
     def extract_state_long(self, data):
         # The address lookup only works in the US and returns nothing in rural areas,

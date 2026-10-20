@@ -11,7 +11,7 @@ from .const import DOMAIN
 
 SENSOR_KEYS = {
     "current_address": "Current Address",
-    "city": "City",
+    "city": "Locality",  # key kept as "city" so existing unique_ids/entity IDs don't change
     "state": "State",
     "country": "Country",
     "timezone_id": "Timezone ID",
@@ -23,7 +23,7 @@ SENSOR_KEYS = {
 
 SENSOR_ICONS = {
     "current_address": "mdi:map-marker",
-    "city": "mdi:city",
+    "city": "mdi:map-marker-radius",
     "state": "mdi:flag-variant",
     "country": "mdi:earth",
     "timezone_id": "mdi:calendar-clock",
