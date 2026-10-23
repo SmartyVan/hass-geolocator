@@ -23,6 +23,7 @@ class GoogleMapsAPI(GeoLocatorAPI):
     async def reverse_geocode(self, lat, lon, language="en"):
         params = {
             "latlng": f"{lat},{lon}",
+            "result_type": "street_address|route|neighborhood|locality|administrative_area_level_2|administrative_area_level_1|country",
             "key": self.api_key,
             "language": language,
         }
