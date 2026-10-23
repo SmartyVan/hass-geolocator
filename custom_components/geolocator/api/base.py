@@ -22,7 +22,7 @@ class GeoLocatorAPI:
                 data = {}
             if resp.status >= 400:
                 message = data.get("status", {}).get("message") if isinstance(data.get("status"), dict) else None
-                message = message or data.get("description") or data.get("error_message") or resp.reason
+                message = message or data.get("description") or data.get("error_message") or data.get("error") or resp.reason
                 raise GeoLocatorAPIError(f"HTTP {resp.status}: {message}")
             return data
 
