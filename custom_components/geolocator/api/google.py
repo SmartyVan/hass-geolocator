@@ -8,6 +8,21 @@ _LOGGER = logging.getLogger(__name__)
 GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 TIMEZONE_URL = "https://maps.googleapis.com/maps/api/timezone/json"
 
+# Only ask for address-type results. Points of interest can carry wrong data
+# (e.g. a business near a US address listed in another country). The plus_code
+# result is kept because its locality is the nearest named place, which is more
+# accurate in rural areas than the postal town on the road's result.
+RESULT_TYPES = "|".join((
+    "street_address",
+    "route",
+    "neighborhood",
+    "locality",
+    "administrative_area_level_2",
+    "administrative_area_level_1",
+    "country",
+    "plus_code",
+))
+
 class GoogleMapsAPI(GeoLocatorAPI):
     def __init__(self, session, api_key):
         super().__init__(session)
@@ -23,7 +38,7 @@ class GoogleMapsAPI(GeoLocatorAPI):
     async def reverse_geocode(self, lat, lon, language="en"):
         params = {
             "latlng": f"{lat},{lon}",
-            "result_type": "street_address|route|neighborhood|locality|administrative_area_level_2|administrative_area_level_1|country",
+            "result_type": RESULT_TYPES,
             "key": self.api_key,
             "language": language,
         }
@@ -43,23 +58,39 @@ class GoogleMapsAPI(GeoLocatorAPI):
         self._check_status(data, "Time Zone API")
         return data.get("timeZoneId")
 
-    def _get_component(self, data, type_name):
-        for result in data.get("results", []):
+    def _get_component(self, data, type_name, results=None):
+        for result in data.get("results", []) if results is None else results:
             for comp in result.get("address_components", []):
                 if type_name in comp.get("types", []):
                     return comp.get("long_name")
         return None
 
+    @staticmethod
+    def _is_plus_code(result):
+        return "plus_code" in result.get("types", [])
+
     def format_full_address(self, data):
-        if not data.get("results"):
-            return ""
-        return data["results"][0].get("formatted_address", "")
+        # The plus_code result's address is just the code (e.g. "366X+2X Elk Lake"),
+        # which the Plus Code sensor already shows
+        for result in data.get("results", []):
+            if not self._is_plus_code(result):
+                return result.get("formatted_address", "")
+        return ""
 
     def extract_neighborhood(self, data):
         return self._get_component(data, "neighborhood")
 
     def extract_locality(self, data):
-        # City first, then progressively broader areas for rural locations.
+        # Nearest named place from the plus_code result first. Outside towns the
+        # road's locality is its postal town, which can be far away
+        # (e.g. "Tuolumne Meadows" for a campground in Yosemite Valley).
+        plus_code_results = [r for r in data.get("results", []) if self._is_plus_code(r)]
+        for type_name in ("locality", "postal_town"):
+            value = self._get_component(data, type_name, plus_code_results)
+            if value:
+                return value
+
+        # Then city, then progressively broader areas for rural locations.
         # postal_town is what Google uses for towns in the UK and Sweden.
         for type_name in (
             "locality",
