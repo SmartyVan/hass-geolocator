@@ -9,6 +9,6 @@
     "issue_tracker": "https://github.com/SmartyVan/hass-geolocator/issues",
     "requirements": ["timezonefinder==4.5.0", "openlocationcode", "Babel>=2.9.0", "pygeomag==1.1.0"],
     "single_config_entry": true,
-    "version": "0.5.0"
+    "version": "0.5.1"
   }
   

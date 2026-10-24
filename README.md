@@ -130,7 +130,7 @@ These are the currently supported APIs. Feel free to submit pull requests for ot
 
 | Results | API Service | Credentials | Notes | Current Address | Localized |
 |:-------:|-------------|-------------|-------|-----------------|:------------:|
-|🟢| **Google Maps**    | `API Key` | Enable Reverse Geocode & Timezone APIs. Add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
+|🟢| **Google Maps**    | `API Key` | Enable both the **Geocoding API** and the **Time Zone API** in your Google Cloud project (without the Time Zone API, the timezone comes from the local fallback). Add billing to your project. Create an [API key](https://developers.google.com/maps). | Full street address | ✔︎ |
 |🟢| **LocationIQ** | `API Key` | [Sign up](https://locationiq.com/) for a free account and retrieve an API key. \**free accounts can make 5,000 requests/day (2 requests/second)* | Full street address | ✔︎ |
 |🟢| **OpenCage** | `API Key` | [Sign up](https://opencagedata.com) for a free account and retrieve an API key. \**free accounts can make 2,500 requests/day (1 request/second)* | Full street address | ✔︎ |
 |🟡| **GeoNames**       | `Username` | Requires free [user account](https://www.geonames.org/login). After activation, visit [Manage Account](https://www.geonames.org/manageaccount) and enable free web services (link at bottom of page).  | Full street address (US only) |
