@@ -89,13 +89,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             plus_code = olc.encode(lat, lon)
 
             if api is not None:
+                provider_name = API_PROVIDER_META[provider]["name"]
+                user_language = hass.config.language or "en"
+                geocode_raw = None
                 try:
-                    user_language = hass.config.language or "en"
                     geocode_raw = await api.reverse_geocode(lat, lon, user_language)
-                    # OpenCage and BigDataCloud include the timezone in the geocode response,
-                    # so only make a separate timezone request when it's not there
-                    timezone_id = api.extract_timezone(geocode_raw) or await api.get_timezone(lat, lon, user_language)
-
                     address_data = {
                         "current_address": api.format_full_address(geocode_raw),
                         # Key stays "city" so existing entity IDs are preserved
@@ -105,12 +103,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         "country": api.extract_country(geocode_raw),
                         "plus_code": plus_code,
                     }
-                    source = API_PROVIDER_META[provider]["name"]
-
+                    source = provider_name
                 except Exception as e:
-                    _LOGGER.warning("GeoLocator: %s lookup failed, falling back to local timezone: %s", API_PROVIDER_META[provider]["name"], str(e) or type(e).__name__)
+                    _LOGGER.warning("GeoLocator: %s lookup failed, falling back to local timezone: %s", provider_name, str(e) or type(e).__name__)
                     address_data = {}
-                    timezone_id = None
+
+                # Separate from the address lookup so a timezone failure (e.g. Google's
+                # Time Zone API not enabled) keeps the address sensors populated
+                if geocode_raw is not None:
+                    try:
+                        # OpenCage and BigDataCloud include the timezone in the geocode response,
+                        # so only make a separate timezone request when it's not there
+                        timezone_id = api.extract_timezone(geocode_raw) or await api.get_timezone(lat, lon, user_language)
+                    except Exception as e:
+                        _LOGGER.warning("GeoLocator: %s timezone lookup failed, using local timezone: %s", provider_name, str(e) or type(e).__name__)
+                        timezone_id = None
 
             if not timezone_id:
                 try:
