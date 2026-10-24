@@ -43,7 +43,11 @@
         "description": "Update the geolocation provider and API credentials.",
         "data": {
           "api_provider": "API Provider",
-          "api_key": "API Key or Username"
+          "api_key": "API Key or Username",
+          "elevation_sensor": "Elevation sensor (optional)"
+        },
+        "data_description": {
+          "elevation_sensor": "A sensor whose value is the current altitude. When set, the Home Assistant home elevation is kept in sync with it on each location update — useful for mobile installs (RV, van, boat) so altitude-dependent integrations like weather stay accurate. Leave empty to disable."
         }
       },
       "options_credentials": {
