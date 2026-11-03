@@ -70,6 +70,19 @@ The source of the coordinates can be from any sensor or input you have available
 
 *Step 1 does not rely on this custom component, but is a necessary step to ensure your `zone.home` has current GPS coordinates.*
 
+**Elevation (optional):** `homeassistant.set_location` also accepts `elevation`. Home Assistant uses it for sun calculations and some weather forecasts (Met.no adjusts temperature for altitude), and GeoLocator uses it for magnetic declination. If your GPS reports altitude, set it in the same call:
+```yaml
+actions:
+  - condition: template
+    value_template: "{{ states('sensor.gps_altitude') | is_number }}"
+  - action: homeassistant.set_location
+    data:
+      latitude: "{{ states('sensor.gps_latitude') }}"
+      longitude: "{{ states('sensor.gps_longitude') }}"
+      elevation: "{{ states('sensor.gps_altitude') | float | round | int }}"
+```
+Elevation must be a whole number of meters; the action rejects decimals. For a sensor in feet, use `"{{ (states('sensor.gps_altitude') | float * 0.3048) | round | int }}"`. The condition skips the update while the GPS has no altitude reading (`unavailable`, `unknown`).
+
 ### Step 2.
 Call custom service: `geolocator.update_location`:
 ```yaml
@@ -78,8 +91,6 @@ data: {}
 ```
 
 This will fetch the Reverse Geocode data and populate sensors (if using an API) and then set the Home Assistant system Timezone if it has changed.
-
-Optionally, open **Settings > Devices & services > GeoLocator > Configure** and select an **Elevation sensor**. On each location update, GeoLocator converts supported length units to metres and keeps Home Assistant's elevation setting in sync before calculating magnetic declination.
 
 **Example Automation:**\
 This is a very basic automation. Consider using conditions to restrict location information updates only when vehicle is (or has been) moving.
