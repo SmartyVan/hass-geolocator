@@ -1,6 +1,7 @@
 {
     "domain": "geolocator",
     "name": "GeoLocator",
+    "categories": ["presence_location"],
     "codeowners": ["@SmartyVan"],
     "config_flow": true,
     "dependencies": [],
