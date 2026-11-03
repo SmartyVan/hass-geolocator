@@ -4,6 +4,11 @@ DOMAIN = "geolocator"
 
 CONF_API_PROVIDER = "api_provider"
 CONF_API_KEY = "api_key"
+# Optional entity_id of a sensor providing the current altitude. When set, its
+# value is synced to the Home Assistant home elevation on each location update
+# (useful for mobile installs — RVs, vans, boats — so altitude-dependent
+# integrations like weather forecasts stay accurate). Empty = feature disabled.
+CONF_ELEVATION_SENSOR = "elevation_sensor"
 
 SERVICE_UPDATE_LOCATION = "update_location"
 SERVICE_SET_TIMEZONE = "set_home_timezone"

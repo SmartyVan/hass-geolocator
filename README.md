@@ -79,6 +79,8 @@ data: {}
 
 This will fetch the Reverse Geocode data and populate sensors (if using an API) and then set the Home Assistant system Timezone if it has changed.
 
+Optionally, open **Settings > Devices & services > GeoLocator > Configure** and select an **Elevation sensor**. On each location update, GeoLocator converts supported length units to metres and keeps Home Assistant's elevation setting in sync before calculating magnetic declination.
+
 **Example Automation:**\
 This is a very basic automation. Consider using conditions to restrict location information updates only when vehicle is (or has been) moving.
 ```yaml

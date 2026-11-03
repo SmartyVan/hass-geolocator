@@ -1,13 +1,15 @@
 import logging
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfLength
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service import async_register_admin_service
+from homeassistant.util.unit_conversion import DistanceConverter
 
-from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDER_META
+from .const import DOMAIN, SERVICE_SET_TIMEZONE, API_PROVIDER_META, CONF_ELEVATION_SENSOR
 from .api.google import GoogleMapsAPI
 from .api.opencage import OpenCageAPI
 from .api.locationiq import LocationIQAPI
@@ -27,6 +29,48 @@ from datetime import datetime
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
+
+# Only push an elevation update when it shifts by more than this (meters), to
+# avoid churning core.config on every minor sensor jitter.
+ELEVATION_UPDATE_THRESHOLD_M = 10.0
+
+
+async def _update_home_elevation(hass: HomeAssistant, elevation_sensor: str) -> None:
+    """Sync hass.config.elevation (meters) from the configured altitude sensor.
+
+    No-op when no sensor is configured or its state is not a usable number.
+    The sensor's unit_of_measurement must be a Home Assistant length unit.
+    """
+    if not elevation_sensor:
+        return
+
+    state = hass.states.get(elevation_sensor)
+    if state is None or state.state in ("unknown", "unavailable", "none", ""):
+        _LOGGER.debug("GeoLocator: Elevation sensor %s has no usable value; skipping", elevation_sensor)
+        return
+    try:
+        value = float(state.state)
+    except (ValueError, TypeError):
+        _LOGGER.debug("GeoLocator: Elevation sensor %s value not numeric (%s); skipping", elevation_sensor, state.state)
+        return
+
+    unit = state.attributes.get("unit_of_measurement")
+    if unit not in DistanceConverter.VALID_UNITS:
+        _LOGGER.warning(
+            "GeoLocator: Elevation sensor %s has unsupported unit %r; skipping",
+            elevation_sensor,
+            unit,
+        )
+        return
+
+    meters = round(DistanceConverter.convert(value, unit, UnitOfLength.METERS))
+    current = hass.config.elevation or 0
+    if abs(meters - current) < ELEVATION_UPDATE_THRESHOLD_M:
+        return
+
+    _LOGGER.info("GeoLocator: Updating home elevation %s m -> %s m (from %s %s)", current, meters, value, unit)
+    await hass.config.async_update(elevation=meters)
+
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async def async_set_home_timezone(call: ServiceCall):
@@ -137,6 +181,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         source = "Error"
                 except Exception as e:
                     _LOGGER.warning("GeoLocator: Failed to find local timezone: %s", e)
+
+            # Sync elevation before calculating magnetic declination so the
+            # current altitude is used by the World Magnetic Model.
+            try:
+                elevation_sensor = config.get(CONF_ELEVATION_SENSOR, "")
+                await _update_home_elevation(hass, elevation_sensor)
+            except Exception as e:
+                _LOGGER.warning("GeoLocator: Failed to update home elevation: %s", e)
 
             # Magnetic declination from the World Magnetic Model (computed locally, works offline)
             def _calculate_declination():
