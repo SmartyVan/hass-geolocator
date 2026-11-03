@@ -72,16 +72,20 @@ The source of the coordinates can be from any sensor or input you have available
 
 **Elevation (optional):** `homeassistant.set_location` also accepts `elevation`. Home Assistant uses it for sun calculations and some weather forecasts (Met.no adjusts temperature for altitude), and GeoLocator uses it for magnetic declination. If your GPS reports altitude, set it in the same call:
 ```yaml
+# Actions of an automation that updates zone.home from GPS sensors
 actions:
-  - condition: template
-    value_template: "{{ states('sensor.gps_altitude') | is_number }}"
+  # Stop here unless all three sensors have numeric readings
+  - condition: >
+      {{ states('sensor.gps_latitude') | is_number
+         and states('sensor.gps_longitude') | is_number
+         and states('sensor.gps_altitude') | is_number }}
   - action: homeassistant.set_location
     data:
       latitude: "{{ states('sensor.gps_latitude') }}"
       longitude: "{{ states('sensor.gps_longitude') }}"
       elevation: "{{ states('sensor.gps_altitude') | float | round | int }}"
 ```
-Elevation must be a whole number of meters; the action rejects decimals. For a sensor in feet, use `"{{ (states('sensor.gps_altitude') | float * 0.3048) | round | int }}"`. The condition skips the update while the GPS has no altitude reading (`unavailable`, `unknown`).
+Elevation must be a whole number of meters; the action rejects decimals. For a sensor in feet, use `"{{ (states('sensor.gps_altitude') | float * 0.3048) | round | int }}"`. The condition stops the automation, so nothing is updated, while any of the GPS sensors has no reading (`unavailable`, `unknown`).
 
 ### Step 2.
 Call custom service: `geolocator.update_location`:
